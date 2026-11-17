@@ -10,12 +10,14 @@ def parse(path):
     hack = [float(x) for x in re.findall(r"BENCH hackbench ([\d.]+)", text)]
     avgs = [int(x) for x in re.findall(r"BENCH cyclic .*?Avg:\s*(\d+)", text)]
     maxs = [int(x) for x in re.findall(r"BENCH cyclic .*?Max:\s*(\d+)", text)]
+    p99s = [int(x) for x in re.findall(r"BENCH cyclic .*?P99:\s*(\d+)", text)]
     return {
         "kernel": kernel.group(1) if kernel else "?",
         "scx": kernel.group(2) if kernel else "?",
         "hack": statistics.median(hack) if hack else None,
         "avg": statistics.mean(avgs) if avgs else None,
         "max": max(maxs) if maxs else None,
+        "p99": max(p99s) if p99s else None,
     }
 
 
@@ -24,12 +26,12 @@ def cell(v, fmt):
 
 
 def main(pairs):
-    print("| Setup | Kernel | Scheduler | Task switching (s, lower is better) | Avg wakeup delay under load (µs) | Worst wakeup delay (µs) |")
-    print("|---|---|---|---|---|---|")
+    print("| Setup | Kernel | Scheduler | Task switching (s, lower is better) | Avg wakeup delay under load (µs) | 99% of wakeups within (µs) | Worst wakeup delay (µs) |")
+    print("|---|---|---|---|---|---|---|")
     for name, path in pairs:
         r = parse(path)
         print(f"| {name} | {r['kernel']} | {r['scx'] or 'none'} | {cell(r['hack'], '{:.3f}')} | "
-              f"{cell(r['avg'], '{:.0f}')} | {cell(r['max'], '{}')} |")
+              f"{cell(r['avg'], '{:.0f}')} | {cell(r['p99'], '{}')} | {cell(r['max'], '{}')} |")
 
 
 if __name__ == "__main__":

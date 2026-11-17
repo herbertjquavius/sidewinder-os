@@ -1,4 +1,4 @@
 # Any system image plus the benchmark tools
 ARG BASE
 FROM ${BASE}
-RUN dnf -y install rt-tests stress-ng && dnf clean all && rm -rf /var/cache/* /var/log/* /tmp/*
+RUN dnf -y install perf stress-ng && dnf clean all && rm -rf /var/cache/* /var/log/* /tmp/*

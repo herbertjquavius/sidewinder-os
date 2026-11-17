@@ -121,6 +121,9 @@ cat > "/usr/share/polkit-1/actions/org.$SLUG.welcome.policy" <<EOF
 </policyconfig>
 EOF
 
+# KDE's own Welcome Center would pop up on top of ours, so it stays off
+rm -f /etc/xdg/autostart/org.kde.plasma-welcome.desktop /usr/share/autostart/org.kde.plasma-welcome.desktop
+
 # Menu entry, plus one autostart that only shows on first login
 desktop() {
     cat > "$1" <<EOF
