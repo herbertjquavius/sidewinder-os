@@ -12,6 +12,7 @@ from PIL import Image
 
 from cursor import build_cursors
 from font import build_font
+from icons import build_icons
 from sounds import build_sounds
 from scenes import EXTRAS
 from sprites import FONT, JET_SIDE, JET_TOP_HALF, P
@@ -428,7 +429,8 @@ def main():
     else:
         print("grub-mkfont not found, boot menu font gets built in CI")
 
-    # Cockpit sounds and pixel cursors
+    # Pixel icon theme, cockpit sounds and pixel cursors
+    build_icons(name, os.path.join(OUT, "icon-theme", slug))
     build_sounds(name, os.path.join(OUT, "sounds", slug))
     build_cursors(name, os.path.join(OUT, "cursors", f"{slug}-cursors"))
 
@@ -449,6 +451,19 @@ def main():
     bg.alpha_composite(icon)
     for n in (3, 6, 12):
         place(up(bg, n), "icons", f"{16 * n}x{16 * n}", f"{slug}-shorts.png")
+
+    # Radar browser icon: a scope with a sweep line and two blips
+    scope = [
+        ".....KKKKKK.....", "...KKGGGGGGKK...", "..KG........GK..", ".KG.....G....GK.",
+        ".KG.....G..A.GK.", "KG......G.....GK", "KG......G.....GK", "KG......GGGGGGGK",
+        "KG...........GGK", "KG.....A....GG.K", ".KG........GG.K.", ".KG.......GG.GK.",
+        "..KG.....GG.GK..", "...KKGGGGGGKK...", ".....KKKKKK.....", "................",
+    ]
+    radar = sprite(scope, {"G": P["H"], "K": P["K"], "A": P["A"]})
+    rbg = Image.new("RGBA", radar.size, (0, 0, 0, 0))
+    rbg.alpha_composite(radar)
+    for n in (3, 6, 12):
+        place(up(rbg, n), "icons", f"{16 * n}x{16 * n}", f"{slug}-radar.png")
 
     # Plymouth boot splash theme
     pdir = os.path.join(OUT, "plymouth", slug)

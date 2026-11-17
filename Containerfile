@@ -13,6 +13,7 @@ FROM scratch AS ctx
 COPY distro.env /distro.env
 COPY build /build
 COPY welcome /welcome
+COPY browser /browser
 COPY --from=branding /src/branding/out /branding
 
 # Starts from the kernel layer (Containerfile.kernel)

@@ -42,7 +42,11 @@
   }
   .tiles a span { display: block; color: #8b97a3; margin-top: 8px; font-size: 16px; }
   .tiles a:hover, .tiles a:focus { border-color: #5cff7a; background: #14301c; }
-  .tiles a.big { grid-column: span 2; font-size: 24px; }
+  .tiles a.del { border-color: #ff5c5c; }
+  .tiles a.del span { color: #ff5c5c; }
+  .edit { text-align: right; margin-top: 14px; }
+  .edit a { color: #8b97a3; text-decoration: none; }
+  .edit a:hover { color: #5cff7a; }
   @media (max-width: 700px) { .tiles { grid-template-columns: repeat(2, 1fr); } }
 </style>
 </head>
@@ -56,18 +60,11 @@
       </div>
     </div>
     <form id="search">
-      <input id="q" placeholder="Search YouTube" autofocus autocomplete="off">
-      <button type="submit" data-where="yt">YOUTUBE</button>
-      <button type="submit" data-where="web">WEB</button>
+      <input id="q" placeholder="Search the web" autofocus autocomplete="off">
+      <button type="submit">SEARCH</button>
     </form>
-    <div class="tiles">
-      <a class="big" href="https://www.youtube.com/shorts">SHORTS<span>Straight to the feed</span></a>
-      <a class="big" href="https://www.youtube.com/">YOUTUBE<span>Videos and subs</span></a>
-      <a href="https://www.twitch.tv/">TWITCH<span>Live streams</span></a>
-      <a href="https://discord.com/app">DISCORD<span>Chat</span></a>
-      <a href="https://store.steampowered.com/">STEAM<span>Store</span></a>
-      <a href="https://www.protondb.com/">PROTONDB<span>Will it run?</span></a>
-    </div>
+    <div class="tiles" id="tiles"></div>
+    <div class="edit"><a href="#" id="edit">EDIT SHORTCUTS</a></div>
   </div>
 <script>
   // HUD clock
@@ -80,17 +77,72 @@
   tick();
   setInterval(tick, 10000);
 
-  // Search YouTube by default, the web with the other button
-  let where = "yt";
-  document.querySelectorAll("#search button").forEach(b => b.addEventListener("click", () => where = b.dataset.where));
+  // Web search
   document.getElementById("search").addEventListener("submit", e => {
     e.preventDefault();
     const q = encodeURIComponent(document.getElementById("q").value.trim());
-    if (!q) return;
-    location.href = where === "yt"
-      ? "https://www.youtube.com/results?search_query=" + q
-      : "https://duckduckgo.com/?q=" + q;
+    if (q) location.href = "https://www.google.com/search?q=" + q;
   });
+
+  // Shortcuts, saved in this browser, editable
+  const DEFAULTS = [
+    ["GMAIL", "https://mail.google.com/"], ["DRIVE", "https://drive.google.com/"],
+    ["MAPS", "https://maps.google.com/"], ["WEATHER", "https://weather.com/"],
+    ["NEWS", "https://news.google.com/"], ["WIKIPEDIA", "https://en.wikipedia.org/"],
+    ["YOUTUBE", "https://www.youtube.com/"]
+  ];
+  let editing = false;
+  function load() {
+    try { return JSON.parse(localStorage.getItem("shortcuts")) || DEFAULTS; } catch (e) { return DEFAULTS; }
+  }
+  function save(list) { try { localStorage.setItem("shortcuts", JSON.stringify(list)); } catch (e) {} }
+  function draw() {
+    const box = document.getElementById("tiles");
+    box.innerHTML = "";
+    const list = load();
+    list.forEach(([name, url], i) => {
+      const a = document.createElement("a");
+      a.href = url;
+      a.textContent = name;
+      const sub = document.createElement("span");
+      sub.textContent = editing ? "REMOVE" : new URL(url).hostname.replace(/^www\./, "");
+      a.appendChild(sub);
+      if (editing) a.classList.add("del");
+      a.addEventListener("click", e => {
+        if (!editing) return;
+        e.preventDefault();
+        list.splice(i, 1);
+        save(list);
+        draw();
+      });
+      box.appendChild(a);
+    });
+    const add = document.createElement("a");
+    add.href = "#";
+    add.textContent = "+ ADD";
+    const s2 = document.createElement("span");
+    s2.textContent = "Any site";
+    add.appendChild(s2);
+    add.addEventListener("click", e => {
+      e.preventDefault();
+      let url = (prompt("Website address") || "").trim();
+      if (!url) return;
+      if (!/^[a-z]+:\/\//i.test(url)) url = "https://" + url;
+      const name = (prompt("Name for the shortcut", new URL(url).hostname.replace(/^www\./, "")) || "").trim();
+      if (!name) return;
+      list.push([name.toUpperCase().slice(0, 14), url]);
+      save(list);
+      draw();
+    });
+    box.appendChild(add);
+  }
+  document.getElementById("edit").addEventListener("click", e => {
+    e.preventDefault();
+    editing = !editing;
+    e.target.textContent = editing ? "DONE" : "EDIT SHORTCUTS";
+    draw();
+  });
+  draw();
 </script>
 </body>
 </html>

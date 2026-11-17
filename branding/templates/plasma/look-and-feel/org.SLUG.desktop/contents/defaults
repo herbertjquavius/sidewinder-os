@@ -9,7 +9,7 @@ widgetStyle=Breeze
 Theme=$slug
 
 [kdeglobals][Icons]
-Theme=breeze-dark
+Theme=$slug
 
 [plasmarc][Theme]
 name=default

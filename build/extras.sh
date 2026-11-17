@@ -141,21 +141,63 @@ cat > /etc/firefox/policies/policies.json <<EOF
 }
 EOF
 
-# Shorts button: opens YouTube Shorts in a new window
+# Radar, our own browser, on Qt's Chromium engine
+dnf -y install python3-pyside6 qt6-qtwebengine
+mkdir -p "/usr/share/$SLUG/radar"
+cp /ctx/browser/radar.py /ctx/browser/youtube.js /ctx/browser/blocklist.txt "/usr/share/$SLUG/radar/"
+# Fall back to a private copy of the web engine bindings if Fedora's are missing
+PY=python3
+if ! python3 -c "from PySide6 import QtWebEngineWidgets" 2>/dev/null; then
+    python3 -m venv "/usr/lib/$SLUG/radar-env"
+    "/usr/lib/$SLUG/radar-env/bin/pip" install --no-cache-dir PySide6 PySide6-WebEngine
+    PY="/usr/lib/$SLUG/radar-env/bin/python3"
+fi
+"$PY" -c "from PySide6 import QtWebEngineWidgets"
+cat > /usr/bin/radar <<EOF
+#!/bin/sh
+exec $PY /usr/share/$SLUG/radar/radar.py "\$@"
+EOF
+chmod 755 /usr/bin/radar
 for s in 48 96 192; do
     install -Dm644 "$B/icons/${s}x${s}/$SLUG-shorts.png" "/usr/share/icons/hicolor/${s}x${s}/apps/$SLUG-shorts.png"
+    install -Dm644 "$B/icons/${s}x${s}/$SLUG-radar.png" "/usr/share/icons/hicolor/${s}x${s}/apps/$SLUG-radar.png"
 done
+cat > "/usr/share/applications/$SLUG-radar.desktop" <<EOF
+[Desktop Entry]
+Type=Application
+Name=Radar
+GenericName=Web Browser
+Comment=Browse the web with no ads
+Exec=radar %U
+Icon=$SLUG-radar
+Categories=Network;WebBrowser;
+MimeType=text/html;application/xhtml+xml;x-scheme-handler/http;x-scheme-handler/https;
+StartupWMClass=$SLUG-radar
+EOF
+# Radar opens links by default, Firefox stays as a backup
+cat >> /etc/xdg/mimeapps.list <<EOF
+[Default Applications]
+text/html=$SLUG-radar.desktop
+application/xhtml+xml=$SLUG-radar.desktop
+x-scheme-handler/http=$SLUG-radar.desktop
+x-scheme-handler/https=$SLUG-radar.desktop
+EOF
+printf '\n[General]\nBrowserApplication=%s-radar.desktop\n' "$SLUG" >> /etc/xdg/kdeglobals
+
+# Shorts button: Radar's tall Shorts window
 cat > "/usr/share/applications/$SLUG-shorts.desktop" <<EOF
 [Desktop Entry]
 Type=Application
 Name=Shorts
-Comment=YouTube Shorts in Firefox
-Exec=firefox --new-window https://www.youtube.com/shorts
+Comment=YouTube Shorts with no ads
+Exec=radar --shorts
 Icon=$SLUG-shorts
 Categories=Network;AudioVideo;
 EOF
 
-# Cockpit sounds and pixel cursor as the defaults
+# Pixel icons, cockpit sounds and pixel cursor as the defaults
+cp -r "$B/icon-theme/$SLUG" /usr/share/icons/
+printf '\n[Icons]\nTheme=%s\n' "$SLUG" >> /etc/xdg/kdeglobals
 cp -r "$B/sounds/$SLUG" /usr/share/sounds/
 cp -a "$B/cursors/$SLUG-cursors" /usr/share/icons/
 printf '\n[Sounds]\nTheme=%s\n' "$SLUG" >> /etc/xdg/kdeglobals

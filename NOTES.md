@@ -17,7 +17,9 @@ tests/shots.py - Passes only if our login screen shows up
 welcome/welcome.py - Welcome app (PySide6): update, fix problems, game mode, go back, forums, terminal
 build/kernel.sh - CachyOS kernel swap, NVIDIA akmod build + signing, kernel signing, LAVD, sysctl
 keys/sidewinder-mok.pem - Public half of the Secure Boot key (private half only in the MOK_KEY secret)
-build/extras.sh - Save backups, GE-Proton, battery care, Firefox setup, sounds and cursor install
+build/extras.sh - Save backups, GE-Proton, battery care, Firefox backup setup, Radar install, sounds, cursor and icons
+browser/ - Radar, our own browser (radar.py, PySide6 Qt WebEngine), blocklist.txt, youtube.js ad skipper
+branding/icons.py - Pixel icon theme (folders, trash, terminal, settings, store, files)
 build/gaming.sh - Gaming apps (Flatpak, first boot), controller rules, charger-based power profiles, background updates
 welcome/helper.sh - Root tasks for the welcome app via pkexec (bootc upgrade/rollback, restart network)
 
@@ -44,6 +46,9 @@ welcome/helper.sh - Root tasks for the welcome app via pkexec (bootc upgrade/rol
   jet HUD toggle (MangoHud via Steam flatpak override), TV mode (Steam Big Picture), battery care 80% limit,
   Discord + OBS, cockpit sound theme (branding/sounds.py), pixel cursor (branding/cursor.py),
   tuned Firefox (policies: uBlock, start page, no nags) + Shorts launcher. All in build/extras.sh, welcome app has 8 buttons
+
+- Pixel icon theme, set as default
+- Radar browser: everyday browser (not entertainment-focused per owner), editable shortcut start page, ad/tracker blocking, game mode freezes background tabs, default for links; `radar --shorts` tall window kept for the Shorts panel button; Firefox stays as backup
 
 # Next
 - Installer: enroll our MOK key in kickstart %post (mokutil --import, preset password) so Secure Boot works
