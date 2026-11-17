@@ -43,7 +43,10 @@ fi
 # then the driver (which pulls it in) finds it already there, and the module gets built as a plain user
 dnf -y install --setopt=tsflags=noscripts akmod-nvidia
 dnf -y install nvidia-driver nvidia-settings nvidia-modprobe
-sed -i 's/^MODULE_VARIANT=.*/MODULE_VARIANT=kernel-open/' /etc/nvidia/kernel.conf
+# Newer drivers build the open modules by default, older ones read this setting
+if [ -f /etc/nvidia/kernel.conf ]; then
+    sed -i 's/^MODULE_VARIANT=.*/MODULE_VARIANT=kernel-open/' /etc/nvidia/kernel.conf
+fi
 id kmodbuild >/dev/null 2>&1 || useradd -r -M -s /sbin/nologin kmodbuild
 [ -d /etc/pki/akmods/private ] && chown -R kmodbuild /etc/pki/akmods/private
 out=$(mktemp -d)
