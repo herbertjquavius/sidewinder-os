@@ -39,9 +39,18 @@ if [ -s "$KEY" ]; then
 fi
 
 # NVIDIA open kernel modules (right for RTX 20 series and newer), built for this kernel
-dnf -y install akmod-nvidia nvidia-driver nvidia-settings nvidia-modprobe
+dnf -y install nvidia-driver nvidia-settings nvidia-modprobe
+# The akmod's own install script won't build as root, so skip it and build as a plain user
+dnf -y install --setopt=tsflags=noscripts akmod-nvidia
 sed -i 's/^MODULE_VARIANT=.*/MODULE_VARIANT=kernel-open/' /etc/nvidia/kernel.conf
-akmods --force --kernels "$KVER" --kmod nvidia
+id kmodbuild >/dev/null 2>&1 || useradd -r -M -s /sbin/nologin kmodbuild
+[ -d /etc/pki/akmods/private ] && chown -R kmodbuild /etc/pki/akmods/private
+out=$(mktemp -d)
+chown kmodbuild "$out"
+runuser -u kmodbuild -- env HOME="$out" akmodsbuild --target x86_64 --kernels "$KVER" --outputdir "$out" \
+    /usr/src/akmods/nvidia-kmod.latest
+dnf -y install "$out"/kmod-nvidia-*.rpm
+rm -rf "$out"
 ls /usr/lib/modules/"$KVER"/extra/nvidia/nvidia.ko* >/dev/null
 modinfo -k "$KVER" nvidia | grep -iE '^(version|signer)' || true
 systemctl enable nvidia-suspend.service nvidia-resume.service nvidia-hibernate.service 2>/dev/null || true

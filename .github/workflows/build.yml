@@ -15,6 +15,11 @@ on:
         type: boolean
         default: false
 
+# A newer push cancels an older build, so an old image never overwrites a newer one
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-24.04
