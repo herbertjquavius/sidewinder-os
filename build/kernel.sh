@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # CachyOS kernel, NVIDIA driver built for it, Secure Boot signing, LAVD scheduler, gaming tweaks
 set -euo pipefail
-SLUG=$1
+source /ctx/distro.env
+SLUG=$(echo "$NAME" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+|-+$//g')
 FEDORA=$(rpm -E %fedora)
 KEY=/run/secrets/mok_key
 CERT=/ctx/keys/sidewinder-mok.pem

@@ -5,9 +5,10 @@ on:
   push:
     branches: [main]
   pull_request:
-  schedule:
-    # Daily rebuild to pick up Fedora updates
-    - cron: "17 7 * * *"
+  # The daily kernel layer build kicks this off when it finishes
+  workflow_run:
+    workflows: [kernel]
+    types: [completed]
   workflow_dispatch:
     inputs:
       iso:
@@ -22,6 +23,7 @@ concurrency:
 
 jobs:
   build:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-24.04
     timeout-minutes: 150
     permissions:
@@ -39,19 +41,14 @@ jobs:
       - name: Tools
         run: sudo apt-get update -q && sudo apt-get install -y -q just qemu-system-x86 ovmf socat python3-pil
 
-      - name: Image name
-        run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}:latest" >> "$GITHUB_ENV"
+      - name: Image names
+        run: |
+          echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}:latest" >> "$GITHUB_ENV"
+          echo "KERNEL_IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}-kernel:latest" >> "$GITHUB_ENV"
+          echo "${{ secrets.GITHUB_TOKEN }}" | sudo podman login ghcr.io -u "${{ github.actor }}" --password-stdin
 
       - name: Build image
-        env:
-          MOK_KEY: ${{ secrets.MOK_KEY }}
-        run: |
-          if [ -n "$MOK_KEY" ]; then
-            printf '%s\n' "$MOK_KEY" > /tmp/mok.key
-            export MOK_KEY_FILE=/tmp/mok.key
-          fi
-          just build
-          rm -f /tmp/mok.key
+        run: just build
 
       - name: Make test disk
         run: just disk

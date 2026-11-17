@@ -1,0 +1,13 @@
+# Kernel layer: CachyOS kernel, signed NVIDIA driver, LAVD scheduler. Rebuilt only when these change
+ARG BASE_IMAGE=ghcr.io/ublue-os/kinoite-main:latest
+
+FROM scratch AS ctx
+COPY distro.env /distro.env
+COPY build/kernel.sh /build/kernel.sh
+COPY keys /keys
+
+# The signing key comes in as a build secret and never lands in the image
+FROM ${BASE_IMAGE}
+RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
+    --mount=type=secret,id=mok_key \
+    /ctx/build/kernel.sh && dnf clean all && rm -rf /var/cache/* /var/log/* /tmp/*

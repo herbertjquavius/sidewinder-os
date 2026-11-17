@@ -1,0 +1,51 @@
+# Builds the kernel layer the main build starts from, then the main build runs on top of it
+name: kernel
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - build/kernel.sh
+      - keys/**
+      - Containerfile.kernel
+      - .github/workflows/kernel.yml
+  schedule:
+    # Daily, to pick up new kernels, drivers and Fedora updates
+    - cron: "17 5 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: kernel
+  cancel-in-progress: true
+
+jobs:
+  kernel:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache /usr/local/share/boost
+          sudo docker system prune -af >/dev/null || true
+
+      - name: Tools
+        run: sudo apt-get update -q && sudo apt-get install -y -q just
+
+      - name: Build and publish the kernel layer
+        env:
+          MOK_KEY: ${{ secrets.MOK_KEY }}
+        run: |
+          export KERNEL_IMAGE="ghcr.io/${GITHUB_REPOSITORY,,}-kernel:latest"
+          if [ -n "$MOK_KEY" ]; then
+            printf '%s\n' "$MOK_KEY" > /tmp/mok.key
+            export MOK_KEY_FILE=/tmp/mok.key
+          fi
+          just kernel
+          rm -f /tmp/mok.key
+          echo "${{ secrets.GITHUB_TOKEN }}" | sudo podman login ghcr.io -u "${{ github.actor }}" --password-stdin
+          sudo podman push "$KERNEL_IMAGE"

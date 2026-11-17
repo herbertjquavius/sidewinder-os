@@ -1,5 +1,6 @@
 # One-command builds, run `just` to see them all
 image := env("IMAGE", "localhost/os:latest")
+kernel_image := env("KERNEL_IMAGE", "localhost/os-kernel:latest")
 bib := "quay.io/centos-bootc/bootc-image-builder:latest"
 # Secure Boot signing key, empty means an unsigned build
 mok_key := env("MOK_KEY_FILE", "/dev/null")
@@ -13,9 +14,13 @@ default:
 branding:
     cd branding && python3 make.py
 
-# Build the system image
+# Build the kernel layer: CachyOS kernel, signed NVIDIA driver, scheduler (slow, run when they change)
+kernel:
+    sudo podman build --pull=newer --secret id=mok_key,src={{mok_key}} -f Containerfile.kernel -t {{kernel_image}} .
+
+# Build the system image on top of the kernel layer
 build:
-    sudo podman build --pull=newer --secret id=mok_key,src={{mok_key}} -t {{image}} .
+    sudo podman build --pull=newer --build-arg BASE_IMAGE={{kernel_image}} -t {{image}} .
 
 # Make a test disk image in output/qcow2
 disk:
