@@ -1,0 +1,32 @@
+# $name boot menu
+title-text: ""
+desktop-image: "background.png"
+desktop-image-scale-method: "stretch"
+desktop-color: "#0b0f14"
+terminal-font: "$name Pixel Regular 24"
+
++ boot_menu {
+    left = 31%
+    top = 44%
+    width = 38%
+    height = 30%
+    item_font = "$name Pixel Regular 24"
+    item_color = "#8b97a3"
+    selected_item_color = "#5cff7a"
+    item_height = 36
+    item_spacing = 4
+    icon_width = 0
+    icon_height = 0
+    item_icon_space = 0
+}
+
++ label {
+    id = "__timeout__"
+    top = 80%
+    left = 0
+    width = 100%
+    align = "center"
+    text = "STARTING IN %d SECONDS"
+    color = "#8b97a3"
+    font = "$name Pixel Regular 24"
+}

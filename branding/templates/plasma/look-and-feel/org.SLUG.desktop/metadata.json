@@ -1,0 +1,12 @@
+{
+    "KPackageStructure": "Plasma/LookAndFeel",
+    "KPlugin": {
+        "Authors": [{ "Name": "$name" }],
+        "Description": "$name desktop look",
+        "Id": "org.$slug.desktop",
+        "License": "GPL-2.0-or-later",
+        "Name": "$name",
+        "Version": "1.0"
+    },
+    "X-Plasma-APIVersion": "2"
+}

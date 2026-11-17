@@ -1,0 +1,5 @@
+# Test user for the VM disk only, never used on real installs
+[[customizations.user]]
+name = "pilot"
+password = "test"
+groups = ["wheel"]
