@@ -14,6 +14,7 @@ qemu-system-x86_64 -enable-kvm -cpu host -smp 2 -m 4096 \
     -drive if=pflash,format=raw,file="$VARS" \
     -drive file="$DISK",if=virtio,format=qcow2,snapshot=on \
     -device virtio-vga -display none \
+    -serial file:"$OUT/serial.log" \
     -monitor unix:"$MON",server,nowait &
 QEMU=$!
 trap 'kill $QEMU 2>/dev/null || true' EXIT

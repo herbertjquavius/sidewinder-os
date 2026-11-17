@@ -3,3 +3,7 @@
 name = "pilot"
 password = "test"
 groups = ["wheel"]
+
+# Boot messages also go to the serial log
+[customizations.kernel]
+append = "console=tty0 console=ttyS0,115200"

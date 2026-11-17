@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 150
     permissions:
-      contents: read
+      contents: write
       packages: write
     steps:
       - uses: actions/checkout@v4
@@ -53,6 +53,17 @@ jobs:
           name: vm-screens
           path: output/screens/*.png
           if-no-files-found: ignore
+
+      # Screenshots and boot log on a side branch, easy to read without downloads
+      - name: Share screenshots on the ci-screens branch
+        if: always() && github.event_name != 'pull_request'
+        run: |
+          [ -d output/screens ] || exit 0
+          cd output/screens
+          git init -q -b ci-screens
+          git add -A
+          git -c user.name=ci -c user.email=ci@localhost commit -qm "VM screens from run ${{ github.run_id }}"
+          git push -qf "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" ci-screens
 
       - name: Install ISO
         if: github.event_name == 'workflow_dispatch' && inputs.iso

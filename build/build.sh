@@ -45,15 +45,15 @@ if ! grep -qs '^LookAndFeelPackage=' /etc/xdg/kdeglobals; then
 fi
 
 # Login screen
-if [ -d /usr/share/sddm/themes ]; then
-    cp -r "$B/sddm/$SLUG" /usr/share/sddm/themes/
-    mkdir -p /etc/sddm.conf.d
-    printf '[Theme]\nCurrent=%s\n' "$SLUG" > "/etc/sddm.conf.d/50-$SLUG-theme.conf"
-    if [ -f /etc/sddm.conf ]; then
-        sed -i -E "s|^Current=.*|Current=$SLUG|" /etc/sddm.conf
-    fi
-else
-    echo "No SDDM found, login screen theme skipped" >&2
+# Fedora 44+ ships Plasma Login Manager, which can't use custom themes, so swap in SDDM
+dnf -y install sddm sddm-wayland-plasma
+systemctl disable plasmalogin.service 2>/dev/null || true
+systemctl enable --force sddm.service
+cp -r "$B/sddm/$SLUG" /usr/share/sddm/themes/
+mkdir -p /etc/sddm.conf.d
+printf '[Theme]\nCurrent=%s\n' "$SLUG" > "/etc/sddm.conf.d/50-$SLUG-theme.conf"
+if [ -f /etc/sddm.conf ]; then
+    sed -i -E "s|^Current=.*|Current=$SLUG|" /etc/sddm.conf
 fi
 
 # Boot menu theme, kept ready until it is wired into the bootloader

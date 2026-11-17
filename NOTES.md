@@ -39,7 +39,8 @@ welcome/helper.sh - Root tasks for the welcome app via pkexec (bootc upgrade/rol
 - Builds and tests run in GitHub Actions only (workspace has no KVM or registry access, owner PC is off limits)
 - ISO and test disk made with bootc-image-builder
 - Steam as Flatpak for now (no extra repos needed); switch to RPM Steam if hybrid GPU switching misbehaves on the laptop
-- Risk: newer Fedora KDE may swap SDDM for Plasma Login Manager; build skips the theme and the VM test will fail loudly
+- Fedora 44+ uses Plasma Login Manager (no custom themes), so the image swaps in SDDM to keep our login screen
+- CI pushes VM screenshots + serial log to the ci-screens branch (artifact downloads are blocked from the workspace)
 - Kernel: CachyOS kernel (BORE, sched_ext, CachyOS patches) built for Fedora
 - Nobara-style gaming tweaks and packages on top
 - We build the NVIDIA driver for our kernel ourselves; needs a one-time Secure Boot key screen at install
