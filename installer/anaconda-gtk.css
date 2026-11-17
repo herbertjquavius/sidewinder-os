@@ -1,0 +1,37 @@
+/* Installer colors and art, @PIX@ is where the pictures live */
+@define-color anaconda_bg_color #0b0f14;
+@define-color fedora_bg_color #0b0f14;
+@define-color sidewinder_hud #5cff7a;
+
+.logo-sidebar {
+    background-image: url('@PIX@/sidebar-bg.png');
+    background-color: #0b0f14;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.logo {
+    background-image: url('@PIX@/sidebar-logo.png');
+    background-position: 50% 24px;
+    background-repeat: no-repeat;
+    background-color: transparent;
+}
+
+AnacondaSpokeWindow #nav-box,
+#nav-box {
+    background-color: #0b0f14;
+    background-image: url('@PIX@/topbar-bg.png');
+    background-repeat: repeat;
+    color: #5cff7a;
+}
+
+#nav-box label {
+    color: #5cff7a;
+}
+
+button.suggested-action, .suggested-action {
+    background-image: none;
+    background-color: #14301c;
+    border-color: #5cff7a;
+    color: #5cff7a;
+}

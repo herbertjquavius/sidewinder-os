@@ -357,6 +357,23 @@ def grub_background(em):
     return img
 
 
+def installer_art(name, em):
+    # Installer side strip, logo and top bar
+    side = up(wallpaper(), 3).crop((0, 0, 240, 1080))
+    place(side, "installer", "sidebar-bg.png")
+    title = up(text(name, P["H"]), 3)
+    logo = Image.new("RGBA", (max(title.width, 144) + 16, 144 + 24 + title.height), (0, 0, 0, 0))
+    big = up(em, 3)
+    logo.alpha_composite(big, ((logo.width - big.width) // 2, 0))
+    logo.alpha_composite(title, ((logo.width - title.width) // 2, 168))
+    place(logo, "installer", "sidebar-logo.png")
+    bar = Image.new("RGB", (64, 56), rgb(P["K"]))
+    for x in range(64):
+        for y in range(52, 56):
+            bar.putpixel((x, y), rgb(P["H"]))
+    place(bar, "installer", "topbar-bg.png")
+
+
 def main():
     name = load_name()
     slug = slug_of(name)
@@ -485,6 +502,7 @@ def main():
     wd = up(text(name, P["H"]), 10)
     sheet.paste(wd, (600, 740 - wd.height // 2), wd)
     sheet.save(os.path.join(OUT, "preview.png"))
+    installer_art(name, em)
     print("Built branding for", name, "->", OUT)
 
 

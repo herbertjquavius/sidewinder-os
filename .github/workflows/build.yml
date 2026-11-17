@@ -10,11 +10,6 @@ on:
     workflows: [kernel]
     types: [completed]
   workflow_dispatch:
-    inputs:
-      iso:
-        description: Also build the install ISO
-        type: boolean
-        default: false
 
 # A newer push cancels an older build, so an old image never overwrites a newer one
 concurrency:
@@ -76,22 +71,6 @@ jobs:
           git add -A
           git -c user.name=ci -c user.email=ci@localhost commit -qm "VM screens from run ${{ github.run_id }}"
           git push -qf "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" ci-screens
-
-      - name: Install ISO
-        if: github.event_name == 'workflow_dispatch' && inputs.iso
-        run: |
-          sudo rm -rf output/qcow2
-          just iso
-          sudo chmod -R a+r output/bootiso
-          cd output/bootiso && sha256sum install.iso > install.iso.sha256
-
-      - name: Save ISO
-        if: github.event_name == 'workflow_dispatch' && inputs.iso
-        uses: actions/upload-artifact@v4
-        with:
-          name: install-iso
-          path: output/bootiso/install.iso*
-          compression-level: 0
 
       - name: Publish image
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'

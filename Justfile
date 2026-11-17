@@ -32,14 +32,15 @@ disk:
         -v /var/lib/containers/storage:/var/lib/containers/storage \
         {{bib}} --type qcow2 --rootfs btrfs {{image}}
 
-# Make the install ISO in output/bootiso
+# Make the install ISO in output/bootiso, with our kickstart and installer look
 iso:
-    mkdir -p output
-    sudo podman run --rm --privileged --pull=newer \
-        --security-opt label=type:unconfined_t \
-        -v ./output:/output \
-        -v /var/lib/containers/storage:/var/lib/containers/storage \
-        {{bib}} --type anaconda-iso --rootfs btrfs {{image}}
+    sudo installer/make-iso.sh {{image}} {{bib}}
+
+# Make the ISO plus a self-installing test copy, then install it in a Secure Boot VM
+iso-test:
+    sudo TEST=1 installer/make-iso.sh {{image}} {{bib}}
+    sudo python3 tests/iso-test.py output/bootiso/$(ls output/bootiso | grep -v test | grep '\.iso$') output/iso-screens look
+    sudo python3 tests/iso-test.py output/bootiso/test.iso output/iso-screens install $(. ./distro.env && echo "$NAME" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+|-+$//g')
 
 # Boot the test disk headless and check it reaches our login screen
 test:

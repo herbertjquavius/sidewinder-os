@@ -82,9 +82,13 @@ if [ -f /etc/sddm.conf ]; then
     sed -i -E "s|^Current=.*|Current=$SLUG|" /etc/sddm.conf
 fi
 
-# Boot menu theme, kept ready until it is wired into the bootloader
+# Boot menu theme, the installer copies it to the boot partition
 mkdir -p "/usr/share/$SLUG"
 cp -r "$B/grub/$SLUG" "/usr/share/$SLUG/grub-theme"
+# Installer art, copied into the install USB by installer/make-iso.sh
+cp -r "$B/installer" "/usr/share/$SLUG/installer"
+# Lets the installer queue our Secure Boot key
+dnf -y install mokutil
 
 # Boot splash
 cp -r "$B/plymouth/$SLUG" /usr/share/plymouth/themes/

@@ -50,6 +50,9 @@ welcome/helper.sh - Root tasks for the welcome app via pkexec (bootc upgrade/rol
 - Pixel icon theme, set as default
 - Radar browser: everyday browser (not entertainment-focused per owner), editable shortcut start page, ad/tracker blocking, game mode freezes background tabs, default for links; `radar --shorts` tall window kept for the Shorts panel button; Firefox stays as backup
 
+- Installer: installer/ (kickstart asks only for the drive, queues the MOK key with password = slug, puts the GRUB theme on /boot via user.cfg, bootc switch to ghcr), product.img for the installer look; iso.yml builds it after each good build and tests a full install under Secure Boot (screens on ci-iso branch, ISO as artifact)
+- docs/laptop-test.md: checklist for the real laptop test
+
 # Next
 - Installer: enroll our MOK key in kickstart %post (mokutil --import, preset password) so Secure Boot works
 - Benchmarks: stock Fedora kernel vs CachyOS vs CachyOS + LAVD in the VM, write docs/kernel.md
