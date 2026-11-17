@@ -105,30 +105,40 @@ def jet(img, px, x, y, body, trail=None, trail_from=0, scale=1, flame=False):
     img.alpha_composite(sprite(JET_SIDE, {"X": body, "A": P["R"]}, scale), (x, y))
 
 
-def skyline(px, rnd, max_h, color, windows, density, ground):
-    # Row of buildings standing on the ground line, returns the tallest roof spot
-    x, best = 0, (0, 0, H)
+def skyline(px, rnd, hmin, hmax, color, windows, density, ground, roofs=False):
+    # Row of buildings, ground can sit below the screen so they run off the bottom
+    x, bottom = 0, min(ground, H)
     while x < W:
-        bw, bh = rnd.randrange(6, 24), rnd.randrange(8, max_h)
+        bw, bh = rnd.randrange(6, 24), rnd.randrange(hmin, hmax)
         xe, top = min(x + bw, W), ground - bh
-        for yy in range(top, ground):
+        for yy in range(top, bottom):
             for xx in range(x, xe):
                 px[xx, yy] = rgb(color)
+        if roofs and bw > 11 and rnd.random() < 0.4:
+            # Stepped top
+            step = rnd.randrange(5, 14)
+            for yy in range(top - step, top):
+                for xx in range(x + 3, xe - 3):
+                    px[xx, yy] = rgb(color)
+            top -= step
+        if roofs and rnd.random() < 0.25:
+            # Antenna with a red light
+            ax = (x + xe) // 2
+            ah = rnd.randrange(4, 11)
+            for yy in range(top - ah, top):
+                px[ax, yy] = rgb(color)
+            px[ax, top - ah - 1] = rgb(P["R"])
         if xe - x > 2:
-            for _ in range(int(bw * bh * density)):
-                px[rnd.randrange(x + 1, xe - 1), rnd.randrange(top + 2, ground - 1)] = rgb(rnd.choice(windows))
-        if bh > best[0]:
-            best = (bh, (x + xe) // 2, top)
+            for _ in range(int(bw * (bottom - top) * density)):
+                px[rnd.randrange(x + 1, xe - 1), rnd.randrange(top + 2, bottom)] = rgb(rnd.choice(windows))
         x += bw + rnd.randrange(0, 3)
-    return best
 
 
 def night_intercept(seed=11):
-    # Moonlit night over a harbor city, lights mirrored in the water
+    # Moonlit night over a city that runs off the bottom of the screen
     rnd = random.Random(seed)
     img, px = new()
-    gy = 300
-    sky(px, ["#03050a", "#070b18", "#0d1430", "#151f44", "#22285a", "#3a3168", "#5a3c6a"], gy)
+    sky(px, ["#03050a", "#070b18", "#0d1430", "#151f44", "#22285a", "#3a3168", "#5a3c6a"], 330)
     for _ in range(320):
         px[rnd.randrange(W), rnd.randrange(230)] = rgb("#9fb0d9" if rnd.random() < 0.7 else "#e8eeff")
     for _ in range(12):
@@ -141,25 +151,8 @@ def night_intercept(seed=11):
         disc(px, cx, cy, r, "#b4bccf", "#a3abc0")
     for _ in range(5):
         blob(px, rnd.randrange(W), rnd.randrange(160, 230), rnd.randrange(40, 110), rnd.randrange(2, 5), "#3a3f70", "#2c3160")
-    skyline(px, rnd, 90, "#161b36", ["#3d4a7a", "#56648f"], 1 / 40, gy)
-    _, lx, ly = skyline(px, rnd, 52, "#06080f", ["#ffb000", "#ffd36e", "#7fb2ff"], 1 / 14, gy)
-    px[lx, ly - 1] = rgb(P["R"])
-    # Harbor: the city upside down, darker, wobbling every other row
-    for y in range(gy, H):
-        d = y - gy
-        src = gy - 1 - d
-        shift = (1 if (y // 2) % 2 else -1) if d > 2 else 0
-        for x in range(W):
-            r, g, b, _ = px[min(max(x + shift, 0), W - 1), src]
-            if r + g + b > 330 and BAYER[y % 4][x % 4] > d // 5:
-                px[x, y] = (int(r * 0.85), int(g * 0.85), int(b * 0.85), 255)
-            else:
-                px[x, y] = (int(r * 0.3), int(g * 0.3), int(b * 0.4) + 8, 255)
-    # Moonlight glinting on the water
-    for y in range(gy + 3, H, 3):
-        w = rnd.randint(2, 7)
-        for x in range(150 - w, 150 + w):
-            px[x, y] = rgb("#c9d0e2")
+    skyline(px, rnd, 60, 120, "#161b36", ["#3d4a7a", "#56648f"], 1 / 40, H)
+    skyline(px, rnd, 70, 160, "#06080f", ["#ffb000", "#ffd36e", "#7fb2ff", "#ffb000"], 1 / 14, H + 50, roofs=True)
     for jx, jy in ((390, 110), (340, 138)):
         jet(img, px, jx, jy, "#2a3352", trail="#7d88c0", trail_from=80, scale=2, flame=True)
     return img.convert("RGB")
@@ -210,120 +203,98 @@ def cloud_deck(seed=21):
     return img.convert("RGB")
 
 
-def cliffs(px, rnd, top, half, color, lit):
-    # Left and right canyon walls with ragged faces, the inner faces catch the sun
-    c, l = rgb(color), rgb(lit)
-    for side in (-1, 1):
-        lo, hi = sorted((320 + side * (half - 15), 320 + side * (half + 15)))
-        edge, edges = 320 + side * half, []
-        for y in range(H):
-            if y % 2 == 0:
-                edge = max(lo, min(hi, edge + rnd.randint(-2, 2)))
-            edges.append(edge)
-        t, tops = top, []
-        for x in range(W):
-            if x % 3 == 0:
-                t = max(top - 4, min(top + 4, t + rnd.randint(-1, 1)))
-            tops.append(t)
-        for y in range(top - 4, H):
-            e = edges[y]
-            xs = range(0, max(min(e, W), 0)) if side < 0 else range(max(e, 0), W)
-            for x in xs:
-                if y >= tops[x]:
-                    px[x, y] = l if abs(x - (e - 1 if side < 0 else e)) < 2 else c
+def striped_sun(px, cx, cy, r, top, bot, horizon):
+    # Big retro sun with cut stripes on its lower half, hidden below the horizon
+    a, b = rgb(top), rgb(bot)
+    for y in range(cy - r, min(cy + r, horizon)):
+        rel = y - (cy - 6)
+        if rel > 0 and rel % 8 < 1 + rel // 14:
+            continue
+        k = (y - (cy - r)) / (2 * r)
+        for x in range(cx - r, cx + r):
+            if 0 <= x < W and (x - cx) ** 2 + (y - cy) ** 2 < r * r:
+                px[x, y] = b if k * 16 > BAYER[y % 4][x % 4] else a
+
+
+def mesas(px, rnd, base, height, lo, hi, color, rim):
+    # Mesa skyline: steep sides, flat tops, filled down to the bottom
+    c, rc = rgb(color), rgb(rim)
+    ph = [rnd.uniform(0, 6.28) for _ in range(3)]
+    for x in range(W):
+        n = 0.5 * math.sin(x / 71 + ph[0]) + 0.3 * math.sin(x / 29 + ph[1]) + 0.2 * math.sin(x / 11 + ph[2])
+        s = max(0.0, min(1.0, (n - lo) / (hi - lo)))
+        # Caprock: flat top above halfway, steep slope below it
+        k = 1.0 if s > 0.5 else 0.8 * (s / 0.5) ** 0.5
+        top = int(base - height * k) if s > 0 else base
+        for y in range(max(top, 0), H):
+            px[x, y] = c
+        if s > 0.6 and top >= 0:
+            px[x, top] = rc
 
 
 def canyon_run(seed=66):
-    # Sunset at the end of a canyon, jets coming up the river at you
+    # Mesa country at sunset in three layers, two jets running low between them
     rnd = random.Random(seed)
     img, px = new()
-    sky(px, ["#22163f", "#3d2257", "#6a3060", "#a64858", "#d8704a", "#f2a046", "#ffd27a"], 210)
-    halo(px, 320, 205, 30, 95, "#ffc870")
-    disc(px, 320, 205, 30, "#fff2c4", "#ffbf6a")
-    # River fills the canyon floor, mirroring the sky: bright far away, darker toward you
-    bands = [rgb(c) for c in ("#ffe7a0", "#ffd27a", "#f2a046", "#d8704a", "#a64858", "#6a3060")]
-    for y in range(215, H):
-        t = (y - 215) / (H - 215) * (len(bands) - 1)
-        i = min(int(t), len(bands) - 2)
-        for x in range(W):
-            c = bands[i + 1] if (t - i) * 16 > BAYER[y % 4][x % 4] else bands[i]
-            # Ripple lines, longer and further apart up close
-            if y % (3 + (y - 215) // 30) == 0 and (x // (6 + (y - 215) // 12) + y) % 3 == 0:
-                c = rgb("#3a1a2a")
-            px[x, y] = c
-    for top, half, color, lit in ((185, 45, "#c26650", "#e08a5e"), (160, 95, "#8f4650", "#c26650"),
-                                  (120, 155, "#5a2a44", "#8f4650"), (75, 215, "#30162c", "#5a2a44"),
-                                  (25, 285, "#140a16", "#30162c")):
-        cliffs(px, rnd, top, half, color, lit)
-    colors = {"X": "#140a16", "C": P["A"], "D": "#2a1a2a", "K": "#000000", "W": "#2a2030"}
-    for cx, cy, s in ((345, 182, 1), (320, 250, 3)):
-        spr = sprite(JET_FRONT, colors, s)
-        img.alpha_composite(spr, (cx - spr.width // 2, cy - spr.height // 2))
+    sky(px, ["#1a1034", "#351a4e", "#62285a", "#9c3a58", "#d0563f", "#ec8a3a", "#ffb85a"], 262)
+    for _ in range(60):
+        px[rnd.randrange(W), rnd.randrange(80)] = rgb("#e0c8ff")
+    halo(px, 400, 225, 58, 120, "#ffa45e")
+    striped_sun(px, 400, 225, 58, "#fff3c4", "#ff9e5a", 300)
+    for _ in range(5):
+        blob(px, rnd.randrange(W), rnd.randrange(110, 190), rnd.randrange(40, 100), rnd.randrange(2, 4), "#e88a6a", "#b85a62")
+    mesas(px, rnd, 268, 40, -0.2, 0.3, "#b5566a", "#ffb27a")
+    mesas(px, rnd, 300, 70, 0.0, 0.45, "#7a3550", "#e08a5e")
+    for jx, jy in ((330, 196), (278, 218)):
+        jet(img, px, jx, jy, "#1e1028", trail="#ffd9b0", trail_from=40, scale=2)
+    mesas(px, rnd, 345, 150, 0.35, 0.75, "#2a1028", "#7a3550")
     return img.convert("RGB")
 
 
-def coast_patrol(seed=44):
-    # Looking straight down: two jets heading for a coastline of farm fields
+def open_ocean(seed=44):
+    # Straight down on open ocean: swells, sun glint, clouds and two jets with their shadows
     rnd = random.Random(seed)
     img, px = new()
-
-    def coast(y):
-        return int(440 + 45 * math.sin(y / 70 + 0.5) + 14 * math.sin(y / 19))
-
-    deep, swell = rgb("#0b3556"), rgb("#13507b")
-    shallows = [rgb(c) for c in ("#5fd0d6", "#3aa6c4", "#1e7aa3", "#0b3556")]
-    fields = [rgb(c) for c in ("#5f8f3f", "#6f9e45", "#8aa04e", "#a89a5a", "#7a8f3a", "#557f36")]
-    hedge, road = rgb("#3f6a2c"), rgb("#d6ccb0")
+    tones = [rgb(c) for c in ("#082a48", "#0b3556", "#0f4468", "#14557c")]
+    swell = rgb("#1d6a98")
     for y in range(H):
-        cx = coast(y)
         for x in range(W):
-            d = cx - x
-            if d < -9:
-                # Patchwork fields in staggered rows, hedges between them
-                row = (y + 4) // 20
-                fw = 20 + (row * 37) % 23
-                col = (x + row * 13) // fw
-                if (y + 4) % 20 == 0 or (x + row * 13) % fw == 0:
-                    px[x, y] = hedge
-                else:
-                    px[x, y] = fields[(row * 7 + col * 13) % len(fields)]
-            elif d < -2:
-                px[x, y] = rgb("#f2e4b8" if (x + y) % 3 else "#e2cc92")
-            elif d < 1 or (5 < d < 7 and math.sin(y / 3 + x) > 0.3):
-                px[x, y] = rgb("#ffffff")
-            elif d < 60:
-                t = d / 60 * 3
-                i = min(int(t), 2)
-                px[x, y] = shallows[i + 1] if (t - i) * 16 > BAYER[y % 4][x % 4] else shallows[i]
-            else:
-                # Long ocean swells
-                s = math.sin((x * 0.6 + y) / 7 + math.sin(x / 40) * 2)
-                px[x, y] = swell if s > 0.85 else deep
-    # Coast road and a small town beside it
-    for y in range(H):
-        rx = coast(y) + 34 + int(6 * math.sin(y / 30))
-        for x in (rx, rx + 1):
-            if x < W:
-                px[x, y] = road
-    for _ in range(70):
-        y = rnd.randrange(170, 240)
-        x = coast(y) + 38 + rnd.randrange(2, 30)
-        if x < W - 1:
-            px[x, y] = px[x + 1, y] = rgb(rnd.choice(["#c0504a", "#e8e4dc", "#9a9a9a"]))
+            v = (math.sin(x / 97 + math.sin(y / 61) * 1.5) + math.sin(y / 73 - x / 131) + 2) / 4 * 3
+            i = min(int(v), 2)
+            c = tones[i + 1] if (v - i) * 16 > BAYER[y % 4][x % 4] else tones[i]
+            # Long swells running across
+            if math.sin((x * 0.45 + y) / 6 + math.sin(x / 47) * 2.2) > 0.94 and math.sin(x / 23 + y / 17) > -0.2:
+                c = swell
+            px[x, y] = c
+    # Sun glint, thickest along a diagonal band
+    for _ in range(900):
+        t = rnd.random()
+        spread = rnd.gauss(0, 1)
+        x = int(60 + t * 520 + spread * 18)
+        y = int(340 - t * 300 + spread * 30)
+        if 0 <= x < W - 2 and 0 <= y < H:
+            col = rgb("#ffffff" if abs(spread) < 0.5 else "#bfe4f4")
+            for dx in range(rnd.randint(1, 3)):
+                px[x + dx, y] = col
+    # Whitecaps
+    for _ in range(160):
+        x, y = rnd.randrange(W - 4), rnd.randrange(H)
+        for dx in range(rnd.randint(1, 4)):
+            px[x + dx, y] = rgb("#9fd2ea")
     top = [r + r[::-1] for r in JET_TOP_HALF]
     jet_img = sprite(top, P, 2).rotate(-90, expand=True)
-    shade = sprite(top, {k: (6, 24, 40, 150) for k in P}, 2).rotate(-90, expand=True)
-    jets = ((230, 120), (170, 175))
-    clouds = ((90, 300, 26), (330, 330, 22))
+    shade = sprite(top, {k: (4, 20, 36, 150) for k in P}, 2).rotate(-90, expand=True)
+    jets = ((330, 115), (265, 170))
+    clouds = ((80, 70, 30), (520, 260, 34), (180, 320, 24), (600, 40, 22))
     for cx, cy, s in clouds:
-        puffs(px, random.Random(cx * 7 + cy), cx + 45, cy + 40, s, "#082a45", "#082a45", "#082a45")
+        puffs(px, random.Random(cx * 7 + cy), cx + 50, cy + 45, s, "#082a46", "#082a46", "#082a46")
     for jx, jy in jets:
-        img.alpha_composite(shade, (jx + 40, jy + 60))
+        img.alpha_composite(shade, (jx + 45, jy + 65))
     for cx, cy, s in clouds:
         puffs(px, random.Random(cx * 7 + cy), cx, cy, s, "#ffffff", "#e6eff7", "#b8c9dc")
     for jx, jy in jets:
-        for t in range(jx - 160, jx + 2):
-            if (t - jx + 160) * 17 / 160 > BAYER[jy % 4][t % 4] + 1:
+        for t in range(jx - 180, jx + 2):
+            if 0 <= t < W and (t - jx + 180) * 17 / 180 > BAYER[jy % 4][t % 4] + 1:
                 px[t, jy + 30] = px[t, jy + 33] = rgb("#e8f4fa")
         img.alpha_composite(jet_img, (jx, jy))
     return img.convert("RGB")
@@ -357,6 +328,6 @@ EXTRAS = {
     "head-on": ("Head On", head_on),
     "cloud-deck": ("Cloud Deck", cloud_deck),
     "canyon-run": ("Canyon Run", canyon_run),
-    "coast-patrol": ("Coast Patrol", coast_patrol),
+    "open-ocean": ("Open Ocean", open_ocean),
     "night-intercept": ("Night Intercept", night_intercept),
 }
