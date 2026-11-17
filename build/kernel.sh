@@ -39,9 +39,10 @@ if [ -s "$KEY" ]; then
 fi
 
 # NVIDIA open kernel modules (right for RTX 20 series and newer), built for this kernel
-dnf -y install nvidia-driver nvidia-settings nvidia-modprobe
-# The akmod's own install script won't build as root, so skip it and build as a plain user
+# The akmod's own install script won't build as root, so install it with scripts off first,
+# then the driver (which pulls it in) finds it already there, and the module gets built as a plain user
 dnf -y install --setopt=tsflags=noscripts akmod-nvidia
+dnf -y install nvidia-driver nvidia-settings nvidia-modprobe
 sed -i 's/^MODULE_VARIANT=.*/MODULE_VARIANT=kernel-open/' /etc/nvidia/kernel.conf
 id kmodbuild >/dev/null 2>&1 || useradd -r -M -s /sbin/nologin kmodbuild
 [ -d /etc/pki/akmods/private ] && chown -R kmodbuild /etc/pki/akmods/private
