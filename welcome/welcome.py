@@ -42,7 +42,7 @@ def read_env(path):
 
 
 def load_info():
-    # Name, slug and forum link from the installed system, or from the repo when developing
+    # Name, slug and links from the installed system, or from the repo when developing
     slug = read_env("/etc/os-release").get("VARIANT_ID", "")
     env = read_env(f"/usr/share/{slug}/distro.env") if slug else {}
     if not env:
@@ -74,7 +74,7 @@ class Welcome(QWidget):
     def __init__(self, name, slug, env, logo):
         super().__init__()
         self.name, self.env = name, env
-        self.forum = env.get("FORUM_URL", "")
+        self.wiki = env.get("WIKI_URL", "")
         self.helper = f"/usr/libexec/{slug}-welcome-helper"
         self.setWindowTitle(f"{name} Welcome")
         root = QVBoxLayout(self)
@@ -99,10 +99,10 @@ class Welcome(QWidget):
         self.fix_btn = BigButton("FIX PROBLEMS", "Sound, Wi-Fi, controller or apps acting up")
         self.game_btn = BigButton("GAME MODE: OFF", "Full power for games. Best when plugged in")
         self.back_btn = BigButton("GO BACK", "Undo the last update if something broke")
-        self.forum_btn = BigButton("FORUMS", "Ask for help or show off your setup")
+        self.wiki_btn = BigButton("WIKI", "Help pages for everything, from games to fixes")
         self.term_btn = BigButton("TERMINAL", "For advanced users only")
         self.buttons = [self.update_btn, self.fix_btn, self.game_btn,
-                        self.back_btn, self.forum_btn, self.term_btn]
+                        self.back_btn, self.wiki_btn, self.term_btn]
         grid = QGridLayout()
         grid.setSpacing(16)
         for i, b in enumerate(self.buttons):
@@ -137,7 +137,7 @@ class Welcome(QWidget):
         self.update_btn.clicked.connect(self.do_update)
         self.fix_btn.clicked.connect(self.do_fix)
         self.back_btn.clicked.connect(self.do_back)
-        self.forum_btn.clicked.connect(self.do_forum)
+        self.wiki_btn.clicked.connect(self.do_wiki)
         self.term_btn.clicked.connect(self.do_terminal)
         self.restart_btn.clicked.connect(lambda: QProcess.startDetached("systemctl", ["reboot"]))
         self.game_btn.setCheckable(True)
@@ -211,7 +211,7 @@ class Welcome(QWidget):
 
         def finish():
             if self.failed:
-                self.status.setText("Couldn't fix: " + ", ".join(self.failed) + " Try restarting, or ask on the forums.")
+                self.status.setText("Couldn't fix: " + ", ".join(self.failed) + " Try restarting, or check the wiki.")
             else:
                 self.status.setText("All fixed up! If something's still wrong, restart the laptop.")
         self.run_steps(steps, finish, keep_going=True)
@@ -222,7 +222,7 @@ class Welcome(QWidget):
         if answer != QMessageBox.Yes:
             return
         steps = [("Getting the previous version ready...", ["pkexec", self.helper, "rollback"],
-                  "Couldn't go back. Ask on the forums for help.")]
+                  "Couldn't go back. Check the wiki for help.")]
 
         def finish():
             if self.failed:
@@ -252,11 +252,11 @@ class Welcome(QWidget):
             self.status.setText("Couldn't change the power mode. Try restarting the laptop.")
         self.game_label()
 
-    def do_forum(self):
-        if self.forum:
-            QDesktopServices.openUrl(QUrl(self.forum))
+    def do_wiki(self):
+        if self.wiki:
+            QDesktopServices.openUrl(QUrl(self.wiki))
         else:
-            self.status.setText("The forums are coming soon.")
+            self.status.setText("The wiki is coming soon.")
 
     def check_apps(self):
         if os.path.exists(self.apps_marker):

@@ -41,7 +41,7 @@ Text your brother.
 
 **Don't** type commands you find online into the Terminal unless someone you trust tells you to.
 
-**Still stuck?** Welcome → **FORUMS**, or text your brother. Send:
+**Still stuck?** Welcome → **WIKI**, or text your brother. Send:
 - what you were doing,
 - a photo of the screen,
 - what you already tried from this sheet.

@@ -35,7 +35,7 @@ welcome/helper.sh - Root tasks for the welcome app via pkexec (bootc upgrade/rol
 
 - Phase 4: welcome app About/credits, first-boot app status, os-release links, LICENSE (MIT) + CREDITS.md,
   VM test types the password and screenshots the desktop; kernel layer split (Containerfile.kernel, kernel.yml, daily)
-- Phase 5: forum = GitHub Discussions (free). Categories Announcements, Help and Support (Q&A),
+- Phase 5: owner wanted a distro WIKI: GitHub Wiki (10 pages, source in docs/wiki/, pages added via browser since the wiki git is not pushable from here). Discussions also set up (free):
   Game Compatibility Reports, Showcase, Feedback and Bugs; forms in .github/DISCUSSION_TEMPLATE;
   rules (#1) and welcome (#2) posted and pinned. Default extra categories still there until owner OKs removing
 
