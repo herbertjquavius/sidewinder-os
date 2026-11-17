@@ -1,6 +1,8 @@
 # One-command builds, run `just` to see them all
 image := env("IMAGE", "localhost/os:latest")
 bib := "quay.io/centos-bootc/bootc-image-builder:latest"
+# Secure Boot signing key, empty means an unsigned build
+mok_key := env("MOK_KEY_FILE", "/dev/null")
 # Drop-in that skips the first-boot wizard, passed to the test VM as a systemd credential
 skip_setup := "W1VuaXRdCkNvbmRpdGlvblBhdGhFeGlzdHM9L3NraXAtcGxhc21hLXNldHVwCg=="
 
@@ -13,7 +15,7 @@ branding:
 
 # Build the system image
 build:
-    sudo podman build --pull=newer -t {{image}} .
+    sudo podman build --pull=newer --secret id=mok_key,src={{mok_key}} -t {{image}} .
 
 # Make a test disk image in output/qcow2
 disk:

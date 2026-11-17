@@ -35,6 +35,11 @@ flatpak install --system -y --noninteractive flathub \\
 # MangoHud for Steam games, matched to Steam's runtime version
 branch=\$(flatpak info --system --show-runtime com.valvesoftware.Steam | cut -d/ -f3)
 flatpak install --system -y --noninteractive flathub "org.freedesktop.Platform.VulkanLayer.MangoHud//\$branch" || true
+# Hybrid graphics laptops: Steam and its games run on the NVIDIA card
+if lspci | grep -qi nvidia && [ "\$(lspci | grep -ciE 'vga|3d controller')" -gt 1 ]; then
+    flatpak override --system --env=__NV_PRIME_RENDER_OFFLOAD=1 --env=__GLX_VENDOR_LIBRARY_NAME=nvidia \\
+        --env=__VK_LAYER_NV_optimus=NVIDIA_only com.valvesoftware.Steam
+fi
 mkdir -p /var/lib/$SLUG
 touch /var/lib/$SLUG/flatpaks-done
 EOF

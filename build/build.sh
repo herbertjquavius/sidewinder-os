@@ -7,6 +7,9 @@ SLUG=$(echo "$NAME" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^
 CS=$(echo "$NAME" | sed -E 's/[^A-Za-z0-9_]//g')
 B=/ctx/branding
 
+# Kernel, NVIDIA driver and scheduler first, everything else builds on top
+/ctx/build/kernel.sh "$SLUG"
+
 # Script plugin for our boot splash
 dnf -y install plymouth-plugin-script
 

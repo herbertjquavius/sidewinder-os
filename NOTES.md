@@ -15,6 +15,8 @@ tests/vm-boot.sh - Boots the test disk headless, screenshot every 10s
 tests/shots.py - Passes only if our login screen shows up
 .github/workflows/build.yml - Build, VM test, publish to GHCR only if test passes; ISO on manual run
 welcome/welcome.py - Welcome app (PySide6): update, fix problems, game mode, go back, forums, terminal
+build/kernel.sh - CachyOS kernel swap, NVIDIA akmod build + signing, kernel signing, LAVD, sysctl
+keys/sidewinder-mok.pem - Public half of the Secure Boot key (private half only in the MOK_KEY secret)
 build/gaming.sh - Gaming apps (Flatpak, first boot), controller rules, charger-based power profiles, background updates
 welcome/helper.sh - Root tasks for the welcome app via pkexec (bootc upgrade/rollback, restart network)
 
@@ -28,7 +30,12 @@ welcome/helper.sh - Root tasks for the welcome app via pkexec (bootc upgrade/rol
 - Gaming defaults: Steam, Heroic, Lutris, ProtonUp-Qt, MangoHud, gamemode; controller rules;
   performance on charger, power saver on battery; updates download twice a day, never auto-reboot
 
+- Phase 3 started: CachyOS kernel (COPR bieszczaders), NVIDIA open modules via negativo17 akmods,
+  kernel + modules signed with our MOK key (GitHub secret MOK_KEY, public cert in keys/), scx_lavd --autopower, sysctl tweaks
+
 # Next
+- Installer: enroll our MOK key in kickstart %post (mokutil --import, preset password) so Secure Boot works
+- Benchmarks: stock Fedora kernel vs CachyOS vs CachyOS + LAVD in the VM, write docs/kernel.md
 - Push to GitHub (waiting on owner: connect GitHub, make empty public repo), first CI run, fix what breaks
 - Make the GHCR package public once so installed laptops can update
 - Installer branding (Anaconda from bootc-image-builder)

@@ -38,7 +38,15 @@ jobs:
         run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}:latest" >> "$GITHUB_ENV"
 
       - name: Build image
-        run: just build
+        env:
+          MOK_KEY: ${{ secrets.MOK_KEY }}
+        run: |
+          if [ -n "$MOK_KEY" ]; then
+            printf '%s\n' "$MOK_KEY" > /tmp/mok.key
+            export MOK_KEY_FILE=/tmp/mok.key
+          fi
+          just build
+          rm -f /tmp/mok.key
 
       - name: Make test disk
         run: just disk
