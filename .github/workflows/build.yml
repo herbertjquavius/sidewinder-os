@@ -70,8 +70,10 @@ jobs:
       # Screenshots and boot log on a side branch, easy to read without downloads
       - name: Share screenshots on the ci-screens branch
         if: always() && github.event_name != 'pull_request'
+        continue-on-error: true
         run: |
           [ -d output/screens ] || exit 0
+          sudo chown -R "$(id -u)" output/screens
           cd output/screens
           git init -q -b ci-screens
           git add -A
