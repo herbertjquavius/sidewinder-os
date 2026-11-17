@@ -14,13 +14,16 @@ dnf -y install plymouth-plugin-script
 sed -i -E \
     -e "s|^NAME=.*|NAME=\"$NAME\"|" \
     -e "s|^PRETTY_NAME=.*|PRETTY_NAME=\"$NAME\"|" \
-    -e "/^(LOGO|DEFAULT_HOSTNAME|VARIANT|VARIANT_ID)=/d" \
+    -e "/^(LOGO|DEFAULT_HOSTNAME|VARIANT|VARIANT_ID|HOME_URL|SUPPORT_URL|BUG_REPORT_URL|DOCUMENTATION_URL)=/d" \
     /usr/lib/os-release
 cat >> /usr/lib/os-release <<EOF
 LOGO=$SLUG
 DEFAULT_HOSTNAME="$SLUG"
 VARIANT="Gaming"
 VARIANT_ID=$SLUG
+HOME_URL="$HOME_URL"
+SUPPORT_URL="$FORUM_URL"
+BUG_REPORT_URL="$BUG_URL"
 EOF
 
 # Logo icons

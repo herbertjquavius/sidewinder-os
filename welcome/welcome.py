@@ -7,7 +7,7 @@ import sys
 
 from PySide6.QtCore import QProcess, Qt, QTimer, QUrl
 from PySide6.QtGui import QDesktopServices, QFontDatabase, QPixmap
-from PySide6.QtWidgets import (QApplication, QGridLayout, QHBoxLayout, QLabel, QMessageBox,
+from PySide6.QtWidgets import (QApplication, QDialog, QGridLayout, QHBoxLayout, QLabel, QMessageBox,
                                QPushButton, QVBoxLayout, QWidget)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -24,6 +24,8 @@ QLabel#big { color: #5cff7a; font-size: 24px; background: transparent; }
 QLabel#small { color: #8b97a3; background: transparent; }
 QLabel#status { color: #ffb000; }
 QPushButton#restart { background: #5cff7a; color: #0b0f14; border: none; font-size: 24px; padding: 12px 24px; }
+QPushButton#about { color: #8b97a3; border-width: 2px; padding: 6px 14px; }
+QLabel a { color: #5cff7a; }
 """
 
 
@@ -46,7 +48,7 @@ def load_info():
     if not env:
         env = read_env(os.path.join(REPO, "distro.env"))
         slug = re.sub(r"[^a-z0-9]+", "-", env.get("NAME", "distro").lower()).strip("-")
-    return env.get("NAME", "Distro"), slug, env.get("FORUM_URL", "")
+    return env.get("NAME", "Distro"), slug, env
 
 
 def first_existing(*paths):
@@ -69,9 +71,10 @@ class BigButton(QPushButton):
 
 
 class Welcome(QWidget):
-    def __init__(self, name, slug, forum, logo):
+    def __init__(self, name, slug, env, logo):
         super().__init__()
-        self.forum = forum
+        self.name, self.env = name, env
+        self.forum = env.get("FORUM_URL", "")
         self.helper = f"/usr/libexec/{slug}-welcome-helper"
         self.setWindowTitle(f"{name} Welcome")
         root = QVBoxLayout(self)
@@ -115,7 +118,21 @@ class Welcome(QWidget):
         bottom.addWidget(self.status, 1)
         bottom.addWidget(self.restart_btn)
         root.addLayout(bottom)
-        root.addWidget(QLabel(f"Open this again any time from the app menu: {name} Welcome", objectName="small"))
+        foot = QHBoxLayout()
+        foot.addWidget(QLabel(f"Open this again any time from the app menu: {name} Welcome", objectName="small"), 1)
+        about_btn = QPushButton("ABOUT", objectName="about")
+        about_btn.clicked.connect(self.do_about)
+        foot.addWidget(about_btn)
+        root.addLayout(foot)
+
+        # First boot: the game apps download in the background, say so until they're done
+        self.apps_marker = f"/var/lib/{slug}/flatpaks-done"
+        if os.path.exists(f"/usr/libexec/{slug}-flatpaks") and not os.path.exists(self.apps_marker):
+            self.status.setText("Installing Steam and your other game apps in the background. "
+                                "This can take a few minutes.")
+            self.apps_timer = QTimer(self)
+            self.apps_timer.timeout.connect(self.check_apps)
+            self.apps_timer.start(15000)
 
         self.update_btn.clicked.connect(self.do_update)
         self.fix_btn.clicked.connect(self.do_fix)
@@ -241,6 +258,38 @@ class Welcome(QWidget):
         else:
             self.status.setText("The forums are coming soon.")
 
+    def check_apps(self):
+        if os.path.exists(self.apps_marker):
+            self.apps_timer.stop()
+            self.status.setText("Your game apps are ready! Steam is in the panel at the bottom.")
+
+    def do_about(self):
+        # Credits for everything this is built on
+        home = self.env.get("HOME_URL", "")
+        text = (f"<b>{self.name}</b> is a gaming system for people who just want to play.<br><br>"
+                "Built on the work of:<br>"
+                "&bull; Fedora Kinoite (Fedora Project)<br>"
+                "&bull; Universal Blue<br>"
+                "&bull; KDE Plasma<br>"
+                "&bull; CachyOS kernel and the LAVD scheduler (CachyOS, sched_ext)<br>"
+                "&bull; NVIDIA driver packages (negativo17)<br>"
+                "&bull; Steam (Valve), Heroic, Lutris, ProtonUp-Qt, MangoHud, GameMode<br><br>"
+                f"{self.name} isn't made or endorsed by any of them. Thank you to all of them."
+                + (f'<br><br><a href="{home}" style="color:#5cff7a">Project page</a>' if home else ""))
+        box = QDialog(self)
+        box.setWindowTitle(f"About {self.name}")
+        lay = QVBoxLayout(box)
+        lay.setContentsMargins(28, 24, 28, 24)
+        label = QLabel(text)
+        label.setWordWrap(True)
+        label.setOpenExternalLinks(True)
+        label.setMinimumWidth(520)
+        lay.addWidget(label)
+        ok = QPushButton("OK")
+        ok.clicked.connect(box.accept)
+        lay.addWidget(ok)
+        box.exec()
+
     def do_terminal(self):
         for t in ("konsole", "ptyxis", "gnome-terminal", "xterm"):
             if shutil.which(t):
@@ -251,7 +300,7 @@ class Welcome(QWidget):
 
 def main():
     args = sys.argv[1:]
-    name, slug, forum = load_info()
+    name, slug, env = load_info()
 
     # Shows only once when started from autostart
     if "--first-run" in args:
@@ -271,7 +320,7 @@ def main():
     app.setStyleSheet(CSS % family)
     logo = first_existing(f"/usr/share/icons/hicolor/96x96/apps/{slug}.png",
                           os.path.join(REPO, "branding", "out", "logo-96.png"))
-    win = Welcome(name, slug, forum, logo)
+    win = Welcome(name, slug, env, logo)
     win.show()
 
     # Saves a screenshot for previews

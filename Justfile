@@ -44,7 +44,7 @@ iso:
 # Boot the test disk headless and check it reaches our login screen
 test:
     sudo SHOTS=12 tests/vm-boot.sh output/qcow2/disk.qcow2 output/screens/setup
-    sudo SHOTS=18 QEMU_EXTRA="-smbios type=11,value=io.systemd.credential.binary:systemd.unit-dropin.plasma-setup.service={{skip_setup}}" \
+    sudo SHOTS=30 TYPE_AT=12 TYPE_TEXT=test QEMU_EXTRA="-smbios type=11,value=io.systemd.credential.binary:systemd.unit-dropin.plasma-setup.service={{skip_setup}}" \
         tests/vm-boot.sh output/qcow2/disk.qcow2 output/screens/login
     python3 tests/shots.py output/screens/setup --no-check
     python3 tests/shots.py output/screens/login

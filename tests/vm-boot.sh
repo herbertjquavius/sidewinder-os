@@ -22,5 +22,13 @@ trap 'kill $QEMU 2>/dev/null || true' EXIT
 for i in $(seq -w 1 "$SHOTS"); do
     sleep 10
     echo "screendump $OUT/shot-$i.ppm" | socat - UNIX-CONNECT:"$MON" >/dev/null
+    # Optionally type a password and press Enter at one point, to log in like a person
+    if [ -n "${TYPE_AT:-}" ] && [ "$((10#$i))" -eq "$TYPE_AT" ]; then
+        for c in $(echo "$TYPE_TEXT" | grep -o .); do
+            echo "sendkey $c" | socat - UNIX-CONNECT:"$MON" >/dev/null
+            sleep 0.2
+        done
+        echo "sendkey ret" | socat - UNIX-CONNECT:"$MON" >/dev/null
+    fi
 done
 chmod -R a+rwX "$OUT"
