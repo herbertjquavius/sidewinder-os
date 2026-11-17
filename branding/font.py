@@ -47,8 +47,10 @@ def build_font(family, path):
     fb.setupCharacterMap(cmap)
     fb.setupGlyf(glyphs)
     fb.setupHorizontalMetrics(metrics)
-    fb.setupHorizontalHeader(ascent=7 * PX, descent=-PX)
+    # Two pixels of space between wrapped lines
+    fb.setupHorizontalHeader(ascent=7 * PX, descent=-PX, lineGap=2 * PX)
     fb.setupNameTable({"familyName": family, "styleName": "Regular"})
-    fb.setupOS2(sTypoAscender=7 * PX, sTypoDescender=-PX, usWinAscent=7 * PX, usWinDescent=PX)
+    fb.setupOS2(sTypoAscender=7 * PX, sTypoDescender=-PX, sTypoLineGap=2 * PX,
+                usWinAscent=7 * PX, usWinDescent=PX)
     fb.setupPost()
     fb.save(path)

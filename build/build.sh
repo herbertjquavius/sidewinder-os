@@ -72,6 +72,45 @@ KVER=$(ls /usr/lib/modules | sort -V | tail -n1)
 dracut --no-hostonly --kver "$KVER" --reproducible --zstd --add ostree -f "/usr/lib/modules/$KVER/initramfs.img"
 chmod 0600 "/usr/lib/modules/$KVER/initramfs.img"
 
+# Welcome app
+dnf -y install python3-pyside6
+install -Dm644 /ctx/distro.env "/usr/share/$SLUG/distro.env"
+install -Dm644 /ctx/welcome/welcome.py "/usr/share/$SLUG/welcome/welcome.py"
+install -Dm755 /ctx/welcome/helper.sh "/usr/libexec/$SLUG-welcome-helper"
+cat > "/usr/share/polkit-1/actions/org.$SLUG.welcome.policy" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+<policyconfig>
+  <action id="org.$SLUG.welcome.helper">
+    <description>Update or repair the system</description>
+    <message>Type your password to update or repair the system</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/libexec/$SLUG-welcome-helper</annotate>
+  </action>
+</policyconfig>
+EOF
+
+# Menu entry, plus one autostart that only shows on first login
+desktop() {
+    cat > "$1" <<EOF
+[Desktop Entry]
+Type=Application
+Name=$NAME Welcome
+Comment=Update, fix problems and game mode
+Exec=python3 /usr/share/$SLUG/welcome/welcome.py $2
+Icon=$SLUG
+Categories=System;Settings;
+EOF
+}
+desktop "/usr/share/applications/$SLUG-welcome.desktop" ""
+mkdir -p /etc/xdg/autostart
+desktop "/etc/xdg/autostart/$SLUG-welcome.desktop" "--first-run"
+
 # Clean up
 dnf clean all
 rm -rf /var/cache/* /var/log/* /tmp/*

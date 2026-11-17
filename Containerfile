@@ -12,6 +12,7 @@ RUN cd /src/branding && python3 make.py
 FROM scratch AS ctx
 COPY distro.env /distro.env
 COPY build /build
+COPY welcome /welcome
 COPY --from=branding /src/branding/out /branding
 
 FROM ${BASE_IMAGE}

@@ -14,6 +14,8 @@ Justfile - just build / disk / iso / test
 tests/vm-boot.sh - Boots the test disk headless, screenshot every 10s
 tests/shots.py - Passes only if our login screen shows up
 .github/workflows/build.yml - Build, VM test, publish to GHCR only if test passes; ISO on manual run
+welcome/welcome.py - Welcome app (PySide6): update, fix problems, game mode, go back, forums, terminal
+welcome/helper.sh - Root tasks for the welcome app via pkexec (bootc upgrade/rollback, restart network)
 
 # Done
 - Branding v1: logo (SVG + PNG), wordmark, wallpaper (1080p/1440p/4K), Plymouth boot splash
@@ -21,6 +23,7 @@ tests/shots.py - Passes only if our login screen shows up
   SDDM login, KDE color scheme, KDE global theme + startup splash, GRUB boot menu theme
 
 - Phase 1 files written: image build, CI, VM boot test, ISO build (not run yet)
+- Welcome app v1, shows once on first login, then lives in the app menu (actions untested until a real install)
 
 # Next
 - Push to GitHub (waiting on owner: connect GitHub, make empty public repo), first CI run, fix what breaks
