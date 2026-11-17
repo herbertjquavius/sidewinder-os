@@ -33,6 +33,12 @@ welcome/helper.sh - Root tasks for the welcome app via pkexec (bootc upgrade/rol
 - Phase 3 started: CachyOS kernel (COPR bieszczaders), NVIDIA open modules via negativo17 akmods,
   kernel + modules signed with our MOK key (GitHub secret MOK_KEY, public cert in keys/), scx_lavd --autopower, sysctl tweaks
 
+- Phase 4: welcome app About/credits, first-boot app status, os-release links, LICENSE (MIT) + CREDITS.md,
+  VM test types the password and screenshots the desktop; kernel layer split (Containerfile.kernel, kernel.yml, daily)
+- Phase 5: forum = GitHub Discussions (free). Categories Announcements, Help and Support (Q&A),
+  Game Compatibility Reports, Showcase, Feedback and Bugs; forms in .github/DISCUSSION_TEMPLATE;
+  rules (#1) and welcome (#2) posted and pinned. Default extra categories still there until owner OKs removing
+
 # Next
 - Installer: enroll our MOK key in kickstart %post (mokutil --import, preset password) so Secure Boot works
 - Benchmarks: stock Fedora kernel vs CachyOS vs CachyOS + LAVD in the VM, write docs/kernel.md
