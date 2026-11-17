@@ -111,6 +111,9 @@ desktop "/usr/share/applications/$SLUG-welcome.desktop" ""
 mkdir -p /etc/xdg/autostart
 desktop "/etc/xdg/autostart/$SLUG-welcome.desktop" "--first-run"
 
+# Gaming apps and defaults
+/ctx/build/gaming.sh "$SLUG"
+
 # Clean up
 dnf clean all
 rm -rf /var/cache/* /var/log/* /tmp/*

@@ -15,6 +15,7 @@ tests/vm-boot.sh - Boots the test disk headless, screenshot every 10s
 tests/shots.py - Passes only if our login screen shows up
 .github/workflows/build.yml - Build, VM test, publish to GHCR only if test passes; ISO on manual run
 welcome/welcome.py - Welcome app (PySide6): update, fix problems, game mode, go back, forums, terminal
+build/gaming.sh - Gaming apps (Flatpak, first boot), controller rules, charger-based power profiles, background updates
 welcome/helper.sh - Root tasks for the welcome app via pkexec (bootc upgrade/rollback, restart network)
 
 # Done
@@ -24,6 +25,8 @@ welcome/helper.sh - Root tasks for the welcome app via pkexec (bootc upgrade/rol
 
 - Phase 1 files written: image build, CI, VM boot test, ISO build (not run yet)
 - Welcome app v1, shows once on first login, then lives in the app menu (actions untested until a real install)
+- Gaming defaults: Steam, Heroic, Lutris, ProtonUp-Qt, MangoHud, gamemode; controller rules;
+  performance on charger, power saver on battery; updates download twice a day, never auto-reboot
 
 # Next
 - Push to GitHub (waiting on owner: connect GitHub, make empty public repo), first CI run, fix what breaks
@@ -35,6 +38,7 @@ welcome/helper.sh - Root tasks for the welcome app via pkexec (bootc upgrade/rol
 - Own distro, not a Bazzite reskin: base on Fedora Kinoite via Universal Blue's thin kinoite-main (codecs, hardware fixes)
 - Builds and tests run in GitHub Actions only (workspace has no KVM or registry access, owner PC is off limits)
 - ISO and test disk made with bootc-image-builder
+- Steam as Flatpak for now (no extra repos needed); switch to RPM Steam if hybrid GPU switching misbehaves on the laptop
 - Risk: newer Fedora KDE may swap SDDM for Plasma Login Manager; build skips the theme and the VM test will fail loudly
 - Kernel: CachyOS kernel (BORE, sched_ext, CachyOS patches) built for Fedora
 - Nobara-style gaming tweaks and packages on top
