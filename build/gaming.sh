@@ -31,7 +31,8 @@ set -euo pipefail
 flatpak remote-add --if-not-exists --system flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 flatpak remote-modify --system --no-filter --enable flathub || true
 flatpak install --system -y --noninteractive flathub \\
-    com.valvesoftware.Steam com.heroicgameslauncher.hgl net.lutris.Lutris net.davidotek.pupgui2
+    com.valvesoftware.Steam com.heroicgameslauncher.hgl net.lutris.Lutris net.davidotek.pupgui2 \\
+    com.discordapp.Discord com.obsproject.Studio com.github.mtkennerly.ludusavi
 # MangoHud for Steam games, matched to Steam's runtime version
 branch=\$(flatpak info --system --show-runtime com.valvesoftware.Steam | cut -d/ -f3)
 flatpak install --system -y --noninteractive flathub "org.freedesktop.Platform.VulkanLayer.MangoHud//\$branch" || true

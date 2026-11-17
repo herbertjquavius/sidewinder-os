@@ -27,7 +27,9 @@ tasks.writeConfig("launchers", [
     "applications:com.valvesoftware.Steam.desktop",
     "applications:com.heroicgameslauncher.hgl.desktop",
     "applications:net.lutris.Lutris.desktop",
+    "applications:$slug-shorts.desktop",
     "applications:org.mozilla.firefox.desktop",
+    "applications:com.discordapp.Discord.desktop",
     "applications:org.kde.dolphin.desktop",
     "applications:$slug-welcome.desktop"
 ]);

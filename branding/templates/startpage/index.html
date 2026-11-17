@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>$name</title>
+<style>
+  @font-face { font-family: Pixel; src: url("font.ttf"); }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: #0b0f14 url("wallpaper.png") center / cover no-repeat fixed;
+    image-rendering: pixelated;
+    color: #c9d1d9;
+    font-family: Pixel, monospace;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .panel {
+    background: rgba(11, 15, 20, 0.88);
+    border: 4px solid #5cff7a;
+    padding: 32px 40px 28px;
+    width: min(860px, 94vw);
+  }
+  .top { display: flex; align-items: center; gap: 20px; }
+  .top img { width: 96px; height: 96px; image-rendering: pixelated; }
+  h1 { margin: 0; color: #5cff7a; font-size: 32px; font-weight: normal; letter-spacing: 2px; }
+  #clock { color: #ffb000; font-size: 24px; margin-top: 8px; }
+  form { display: flex; gap: 10px; margin: 26px 0 22px; }
+  input {
+    flex: 1; background: #0b0f14; color: #c9d1d9; border: 2px solid #3a4450;
+    font: 16px Pixel, monospace; padding: 12px 14px; outline: none; text-transform: uppercase;
+  }
+  input:focus { border-color: #5cff7a; }
+  button {
+    background: #141a22; color: #5cff7a; border: 2px solid #3a4450;
+    font: 16px Pixel, monospace; padding: 0 16px; cursor: pointer;
+  }
+  button:hover, button:focus { border-color: #5cff7a; }
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .tiles a {
+    display: block; text-decoration: none; background: #141a22; border: 3px solid #3a4450;
+    padding: 16px 14px; color: #5cff7a; font-size: 16px;
+  }
+  .tiles a span { display: block; color: #8b97a3; margin-top: 8px; font-size: 16px; }
+  .tiles a:hover, .tiles a:focus { border-color: #5cff7a; background: #14301c; }
+  .tiles a.big { grid-column: span 2; font-size: 24px; }
+  @media (max-width: 700px) { .tiles { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+  <div class="panel">
+    <div class="top">
+      <img src="logo.png" alt="">
+      <div>
+        <h1>$name</h1>
+        <div id="clock"></div>
+      </div>
+    </div>
+    <form id="search">
+      <input id="q" placeholder="Search YouTube" autofocus autocomplete="off">
+      <button type="submit" data-where="yt">YOUTUBE</button>
+      <button type="submit" data-where="web">WEB</button>
+    </form>
+    <div class="tiles">
+      <a class="big" href="https://www.youtube.com/shorts">SHORTS<span>Straight to the feed</span></a>
+      <a class="big" href="https://www.youtube.com/">YOUTUBE<span>Videos and subs</span></a>
+      <a href="https://www.twitch.tv/">TWITCH<span>Live streams</span></a>
+      <a href="https://discord.com/app">DISCORD<span>Chat</span></a>
+      <a href="https://store.steampowered.com/">STEAM<span>Store</span></a>
+      <a href="https://www.protondb.com/">PROTONDB<span>Will it run?</span></a>
+    </div>
+  </div>
+<script>
+  // HUD clock
+  function tick() {
+    const d = new Date();
+    document.getElementById("clock").textContent =
+      d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) + "  " +
+      d.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" }).toUpperCase();
+  }
+  tick();
+  setInterval(tick, 10000);
+
+  // Search YouTube by default, the web with the other button
+  let where = "yt";
+  document.querySelectorAll("#search button").forEach(b => b.addEventListener("click", () => where = b.dataset.where));
+  document.getElementById("search").addEventListener("submit", e => {
+    e.preventDefault();
+    const q = encodeURIComponent(document.getElementById("q").value.trim());
+    if (!q) return;
+    location.href = where === "yt"
+      ? "https://www.youtube.com/results?search_query=" + q
+      : "https://duckduckgo.com/?q=" + q;
+  });
+</script>
+</body>
+</html>

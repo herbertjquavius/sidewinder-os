@@ -19,6 +19,12 @@ case "${1:-}" in
         systemctl restart NetworkManager
         systemctl restart bluetooth
         ;;
+    battery-on|battery-off)
+        # Saves the choice and applies it now, the boot service applies it after restarts
+        mkdir -p /etc/SLUGDIR
+        [ "$1" = battery-on ] && echo on > /etc/SLUGDIR/battery-limit || echo off > /etc/SLUGDIR/battery-limit
+        /usr/libexec/SLUGDIR-battery
+        ;;
     *)
         echo "Unknown task" >&2
         exit 2

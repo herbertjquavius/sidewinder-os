@@ -10,7 +10,9 @@ from string import Template
 
 from PIL import Image
 
+from cursor import build_cursors
 from font import build_font
+from sounds import build_sounds
 from scenes import EXTRAS
 from sprites import FONT, JET_SIDE, JET_TOP_HALF, P
 
@@ -425,6 +427,28 @@ def main():
         subprocess.run([mk, "-s", "24", "-o", os.path.join(OUT, "grub", slug, "pixel-24.pf2"), ttf], check=True)
     else:
         print("grub-mkfont not found, boot menu font gets built in CI")
+
+    # Cockpit sounds and pixel cursors
+    build_sounds(name, os.path.join(OUT, "sounds", slug))
+    build_cursors(name, os.path.join(OUT, "cursors", f"{slug}-cursors"))
+
+    # Browser start page: wallpaper, logo and font next to the page
+    place(up(wp, 3), "startpage", "wallpaper.png")
+    place(up(em, 2), "startpage", "logo.png")
+    shutil.copy(ttf, os.path.join(OUT, "startpage", "font.ttf"))
+
+    # Shorts launcher icon: a play button in a HUD box
+    play = [
+        "GGGGGGGGGGGGGGGG", "G..............G", "G..............G", "G....G.........G",
+        "G....GG........G", "G....GGG.......G", "G....GGGG......G", "G....GGGGG.....G",
+        "G....GGGGG.....G", "G....GGGG......G", "G....GGG.......G", "G....GG........G",
+        "G....G.........G", "G..............G", "G..............G", "GGGGGGGGGGGGGGGG",
+    ]
+    icon = sprite(play, {"G": P["H"]})
+    bg = Image.new("RGBA", icon.size, rgb(P["K"]) + (255,))
+    bg.alpha_composite(icon)
+    for n in (3, 6, 12):
+        place(up(bg, n), "icons", f"{16 * n}x{16 * n}", f"{slug}-shorts.png")
 
     # Plymouth boot splash theme
     pdir = os.path.join(OUT, "plymouth", slug)

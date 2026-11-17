@@ -17,6 +17,7 @@ tests/shots.py - Passes only if our login screen shows up
 welcome/welcome.py - Welcome app (PySide6): update, fix problems, game mode, go back, forums, terminal
 build/kernel.sh - CachyOS kernel swap, NVIDIA akmod build + signing, kernel signing, LAVD, sysctl
 keys/sidewinder-mok.pem - Public half of the Secure Boot key (private half only in the MOK_KEY secret)
+build/extras.sh - Save backups, GE-Proton, battery care, Firefox setup, sounds and cursor install
 build/gaming.sh - Gaming apps (Flatpak, first boot), controller rules, charger-based power profiles, background updates
 welcome/helper.sh - Root tasks for the welcome app via pkexec (bootc upgrade/rollback, restart network)
 
@@ -38,6 +39,11 @@ welcome/helper.sh - Root tasks for the welcome app via pkexec (bootc upgrade/rol
 - Phase 5: owner wanted a distro WIKI: GitHub Wiki (10 pages, source in docs/wiki/, pages added via browser since the wiki git is not pushable from here). Discussions also set up (free):
   Game Compatibility Reports, Showcase, Feedback and Bugs; forms in .github/DISCUSSION_TEMPLATE;
   rules (#1) and welcome (#2) posted and pinned. Default extra categories still there until owner OKs removing
+
+- "Worth wiping for" features: daily save backups (Ludusavi user timer), self-updating GE-Proton (weekly user timer),
+  jet HUD toggle (MangoHud via Steam flatpak override), TV mode (Steam Big Picture), battery care 80% limit,
+  Discord + OBS, cockpit sound theme (branding/sounds.py), pixel cursor (branding/cursor.py),
+  tuned Firefox (policies: uBlock, start page, no nags) + Shorts launcher. All in build/extras.sh, welcome app has 8 buttons
 
 # Next
 - Installer: enroll our MOK key in kickstart %post (mokutil --import, preset password) so Secure Boot works

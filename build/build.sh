@@ -102,7 +102,8 @@ chmod 0600 "/usr/lib/modules/$KVER/initramfs.img"
 dnf -y install python3-pyside6
 install -Dm644 /ctx/distro.env "/usr/share/$SLUG/distro.env"
 install -Dm644 /ctx/welcome/welcome.py "/usr/share/$SLUG/welcome/welcome.py"
-install -Dm755 /ctx/welcome/helper.sh "/usr/libexec/$SLUG-welcome-helper"
+sed "s/SLUGDIR/$SLUG/g" /ctx/welcome/helper.sh > "/usr/libexec/$SLUG-welcome-helper"
+chmod 0755 "/usr/libexec/$SLUG-welcome-helper"
 cat > "/usr/share/polkit-1/actions/org.$SLUG.welcome.policy" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE policyconfig PUBLIC "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
@@ -142,6 +143,7 @@ desktop "/etc/xdg/autostart/$SLUG-welcome.desktop" "--first-run"
 
 # Gaming apps and defaults
 /ctx/build/gaming.sh "$SLUG"
+/ctx/build/extras.sh "$SLUG"
 
 # Clean up
 dnf clean all

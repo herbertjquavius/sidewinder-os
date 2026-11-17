@@ -1,4 +1,5 @@
 # Welcome app: big buttons for updates, fixes and game mode, no terminal needed
+import glob
 import os
 import re
 import shutil
@@ -51,6 +52,21 @@ def load_info():
     return env.get("NAME", "Distro"), slug, env
 
 
+# Green jet HUD look for MangoHud, list values joined with +
+HUD_STYLE = ("fps,frametime=0,frame_timing,gpu_stats,gpu_temp,cpu_stats,cpu_temp,ram,position=top-left,"
+             "hud_compact,round_corners=0,font_size=20,background_alpha=0.35,background_color=0B0F14,"
+             "text_color=5CFF7A,gpu_color=5CFF7A,cpu_color=5CFF7A,ram_color=5CFF7A,frametime_color=5CFF7A,"
+             "fps_color_change,fps_value=30+60,fps_color=FF5A36+FFB000+5CFF7A,toggle_hud=Shift_R+F12")
+
+
+def read_text(path):
+    try:
+        with open(path) as f:
+            return f.read().strip()
+    except OSError:
+        return ""
+
+
 def first_existing(*paths):
     return next((p for p in paths if os.path.exists(p)), None)
 
@@ -59,7 +75,7 @@ class BigButton(QPushButton):
     # Big button with a title and a plain explanation under it
     def __init__(self, title, text):
         super().__init__()
-        self.setMinimumSize(340, 104)
+        self.setMinimumSize(340, 92)
         self.setCursor(Qt.PointingHandCursor)
         lay = QVBoxLayout(self)
         self.title = QLabel(title, objectName="big")
@@ -98,11 +114,13 @@ class Welcome(QWidget):
         self.update_btn = BigButton("UPDATE", "Get the newest version of everything")
         self.fix_btn = BigButton("FIX PROBLEMS", "Sound, Wi-Fi, controller or apps acting up")
         self.game_btn = BigButton("GAME MODE: OFF", "Full power for games. Best when plugged in")
+        self.hud_btn = BigButton("HUD: OFF", "Fighter jet style FPS and temps in every Steam game")
+        self.saves_btn = BigButton("SAVES", "Backed up every day. Open to restore one")
+        self.tv_btn = BigButton("TV MODE", "Steam full screen, made for a controller")
         self.back_btn = BigButton("GO BACK", "Undo the last update if something broke")
         self.wiki_btn = BigButton("WIKI", "Help pages for everything, from games to fixes")
-        self.term_btn = BigButton("TERMINAL", "For advanced users only")
-        self.buttons = [self.update_btn, self.fix_btn, self.game_btn,
-                        self.back_btn, self.wiki_btn, self.term_btn]
+        self.buttons = [self.update_btn, self.fix_btn, self.game_btn, self.hud_btn,
+                        self.saves_btn, self.tv_btn, self.back_btn, self.wiki_btn]
         grid = QGridLayout()
         grid.setSpacing(16)
         for i, b in enumerate(self.buttons):
@@ -119,7 +137,19 @@ class Welcome(QWidget):
         bottom.addWidget(self.restart_btn)
         root.addLayout(bottom)
         foot = QHBoxLayout()
-        foot.addWidget(QLabel(f"Open this again any time from the app menu: {name} Welcome", objectName="small"), 1)
+        foot.addWidget(QLabel(f"Find this again in the app menu: {name} Welcome", objectName="small"), 1)
+        # Battery care only shows on laptops that support a charge limit
+        self.battery_btn = None
+        if glob.glob("/sys/class/power_supply/BAT*/charge_control_end_threshold"):
+            self.battery_btn = QPushButton("", objectName="about")
+            self.battery_btn.setCheckable(True)
+            self.battery_btn.setChecked(read_text(f"/etc/{slug}/battery-limit") == "on")
+            self.battery_label()
+            self.battery_btn.toggled.connect(self.do_battery)
+            foot.addWidget(self.battery_btn)
+        term_btn = QPushButton("TERMINAL", objectName="about")
+        term_btn.clicked.connect(self.do_terminal)
+        foot.addWidget(term_btn)
         about_btn = QPushButton("ABOUT", objectName="about")
         about_btn.clicked.connect(self.do_about)
         foot.addWidget(about_btn)
@@ -138,7 +168,12 @@ class Welcome(QWidget):
         self.fix_btn.clicked.connect(self.do_fix)
         self.back_btn.clicked.connect(self.do_back)
         self.wiki_btn.clicked.connect(self.do_wiki)
-        self.term_btn.clicked.connect(self.do_terminal)
+        self.saves_btn.clicked.connect(self.do_saves)
+        self.tv_btn.clicked.connect(self.do_tv)
+        self.hud_btn.setCheckable(True)
+        self.hud_btn.setChecked("MANGOHUD=1" in self.steam_overrides())
+        self.hud_label()
+        self.hud_btn.toggled.connect(self.do_hud)
         self.restart_btn.clicked.connect(lambda: QProcess.startDetached("systemctl", ["reboot"]))
         self.game_btn.setCheckable(True)
         self.game_btn.setChecked(self.power_profile() == "performance")
@@ -289,6 +324,68 @@ class Welcome(QWidget):
         ok.clicked.connect(box.accept)
         lay.addWidget(ok)
         box.exec()
+
+    def steam_overrides(self):
+        try:
+            return subprocess.run(["flatpak", "override", "--user", "--show", "com.valvesoftware.Steam"],
+                                  capture_output=True, text=True, timeout=5).stdout
+        except (OSError, subprocess.SubprocessError):
+            return ""
+
+    def hud_label(self):
+        self.hud_btn.title.setText("HUD: ON" if self.hud_btn.isChecked() else "HUD: OFF")
+
+    def do_hud(self, on):
+        # MangoHud in every Steam game, styled like a green jet HUD
+        if on:
+            cmd = ["flatpak", "override", "--user", "--env=MANGOHUD=1",
+                   "--env=MANGOHUD_CONFIG=" + HUD_STYLE, "com.valvesoftware.Steam"]
+        else:
+            cmd = ["flatpak", "override", "--user", "--unset-env=MANGOHUD",
+                   "--unset-env=MANGOHUD_CONFIG", "com.valvesoftware.Steam"]
+        try:
+            subprocess.run(cmd, check=True, timeout=10)
+            self.status.setText("HUD on. Restart Steam to see it in games. Right Shift + F12 hides it."
+                                if on else "HUD off. Restart Steam to remove it.")
+        except (OSError, subprocess.SubprocessError):
+            self.hud_btn.blockSignals(True)
+            self.hud_btn.setChecked(not on)
+            self.hud_btn.blockSignals(False)
+            self.status.setText("Couldn't change the HUD. Is Steam installed yet?")
+        self.hud_label()
+
+    def do_saves(self):
+        # Ludusavi shows every backup and restores with one click
+        if QProcess.startDetached("flatpak", ["run", "com.github.mtkennerly.ludusavi"]):
+            self.status.setText("Your saves are backed up every day to Game Save Backups in your home folder. "
+                                "Use the Restore tab to bring one back.")
+        else:
+            self.status.setText("The save backup app isn't installed yet. Try again in a few minutes.")
+
+    def do_tv(self):
+        if QProcess.startDetached("flatpak", ["run", "com.valvesoftware.Steam", "steam://open/bigpicture"]):
+            self.status.setText("Opening TV mode. Press the Steam or guide button on your controller to get around.")
+        else:
+            self.status.setText("Steam isn't installed yet. Try again in a few minutes.")
+
+    def battery_label(self):
+        self.battery_btn.setText("BATTERY CARE: ON" if self.battery_btn.isChecked() else "BATTERY CARE: OFF")
+
+    def do_battery(self, on):
+        steps = [("Saving battery setting...", ["pkexec", self.helper, "battery-on" if on else "battery-off"],
+                  "Couldn't change battery care.")]
+
+        def finish():
+            if self.failed:
+                self.status.setText(self.failed[0])
+                self.battery_btn.blockSignals(True)
+                self.battery_btn.setChecked(not on)
+                self.battery_btn.blockSignals(False)
+            else:
+                self.status.setText("Battery care on: charging stops at 80% so the battery lasts years longer."
+                                    if on else "Battery care off: charging to 100%.")
+            self.battery_label()
+        self.run_steps(steps, finish)
 
     def do_terminal(self):
         for t in ("konsole", "ptyxis", "gnome-terminal", "xterm"):
