@@ -1,0 +1,48 @@
+title: "[Game] "
+labels: []
+body:
+  - type: input
+    id: game
+    attributes:
+      label: Game
+      placeholder: Elden Ring
+    validations:
+      required: true
+  - type: dropdown
+    id: store
+    attributes:
+      label: Where did you get it?
+      options:
+        - Steam
+        - Epic (Heroic)
+        - GOG (Heroic)
+        - Other (Lutris)
+    validations:
+      required: true
+  - type: dropdown
+    id: rating
+    attributes:
+      label: How does it run?
+      options:
+        - Perfect, nothing to do
+        - Plays well, small issues
+        - Plays, but needs tweaks (say which below)
+        - Doesn't start or unplayable
+    validations:
+      required: true
+  - type: input
+    id: proton
+    attributes:
+      label: Proton version
+      description: In Steam, right-click the game, then Properties, then Compatibility. Leave empty if you didn't change it.
+      placeholder: Proton Experimental
+  - type: input
+    id: fps
+    attributes:
+      label: FPS and settings
+      placeholder: About 60 FPS on High at 1080p
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else?
+      description: Tweaks that helped, problems you hit, launch options.
