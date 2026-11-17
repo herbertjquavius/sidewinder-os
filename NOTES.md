@@ -40,7 +40,8 @@ welcome/helper.sh - Root tasks for the welcome app via pkexec (bootc upgrade/rol
 - ISO and test disk made with bootc-image-builder
 - Steam as Flatpak for now (no extra repos needed); switch to RPM Steam if hybrid GPU switching misbehaves on the laptop
 - Fedora 44+ uses Plasma Login Manager (no custom themes), so the image swaps in SDDM to keep our login screen
-- First boot runs Fedora's Plasma Setup wizard (makes the user account, shows "Powered by Sidewinder"); keep it, brand its wallpaper later. VM test masks it to reach login
+- First boot runs Fedora's Plasma Setup wizard (makes the user account, shows "Powered by Sidewinder"); keep it, reskinned by replacing Plasma's Next wallpaper (the only one it reads) and system default colors.
+  VM test boots twice: once into the wizard (screenshots only), once with a systemd credential drop-in that skips it, to check login
 - CI pushes VM screenshots + serial log to the ci-screens branch (artifact downloads are blocked from the workspace)
 - Kernel: CachyOS kernel (BORE, sched_ext, CachyOS patches) built for Fedora
 - Nobara-style gaming tweaks and packages on top

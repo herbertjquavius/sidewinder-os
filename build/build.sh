@@ -33,7 +33,7 @@ install -Dm644 "$B/logo.svg" "/usr/share/icons/hicolor/scalable/apps/$SLUG.svg"
 install -Dm644 "$B/fonts/$SLUG-pixel.ttf" "/usr/share/fonts/$SLUG/$SLUG-pixel.ttf"
 
 # Wallpaper, colors and desktop look
-cp -r "$B/wallpapers/$SLUG" /usr/share/wallpapers/
+cp -r "$B/wallpapers/"* /usr/share/wallpapers/
 install -Dm644 "$B/color-schemes/$CS.colors" "/usr/share/color-schemes/$CS.colors"
 cp -r "$B/plasma/look-and-feel/org.$SLUG.desktop" /usr/share/plasma/look-and-feel/
 
@@ -43,6 +43,29 @@ grep -rl '^LookAndFeelPackage=' /etc/xdg /usr/share/kde-settings 2>/dev/null \
 if ! grep -qs '^LookAndFeelPackage=' /etc/xdg/kdeglobals; then
     printf '\n[KDE]\nLookAndFeelPackage=org.%s.desktop\n' "$SLUG" >> /etc/xdg/kdeglobals
 fi
+
+# Lock screen uses our wallpaper
+cat >> /etc/xdg/kscreenlockerrc <<EOF
+
+[Greeter][Wallpaper][org.kde.image][General]
+Image=file:///usr/share/wallpapers/$SLUG/
+EOF
+
+# Green HUD terminal as the default Konsole profile
+install -Dm644 "$B/konsole/$SLUG.colorscheme" "/usr/share/konsole/$SLUG.colorscheme"
+install -Dm644 "$B/konsole/$SLUG.profile" "/usr/share/konsole/$SLUG.profile"
+printf '\n[Desktop Entry]\nDefaultProfile=%s.profile\n' "$SLUG" >> /etc/xdg/konsolerc
+
+# Our colors as the system default, used by the first-boot wizard and every new user
+cat "$B/color-schemes/$CS.colors" >> /etc/xdg/kdeglobals
+printf '\n[General]\nAccentColor=92,255,122\n' >> /etc/xdg/kdeglobals
+
+# First-boot wizard shows Plasma's Next wallpaper, so Next becomes ours
+for d in images images_dark; do
+    mkdir -p "/usr/share/wallpapers/Next/contents/$d"
+    rm -f "/usr/share/wallpapers/Next/contents/$d/"*
+    cp "$B/setup/"*.png "/usr/share/wallpapers/Next/contents/$d/"
+done
 
 # Login screen
 # Fedora 44+ ships Plasma Login Manager, which can't use custom themes, so swap in SDDM

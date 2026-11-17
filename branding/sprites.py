@@ -60,6 +60,21 @@ JET_SIDE = [
     "..........XXXXX.........",
 ]
 
+# Head-on F-16 style view: X body, C canopy, D shade, K intake, W wingtip missiles
+JET_FRONT = [
+    "...............X...............",
+    "...............X...............",
+    "...............X...............",
+    "..............XCX..............",
+    ".............XCCCX.............",
+    "W.XXXXXXXXXXXXXXXXXXXXXXXXXXX.W",
+    "WXXXXXXXXXXXXXDDDXXXXXXXXXXXXXW",
+    ".......XX....XKKKX....XX.......",
+    ".............XKKKX.............",
+    "..............XXX..............",
+    ".............X...X.............",
+]
+
 # 5x7 pixel font, rows split by spaces
 _F = {
     " ": "..... ..... ..... ..... ..... ..... .....",

@@ -1,6 +1,8 @@
 # One-command builds, run `just` to see them all
 image := env("IMAGE", "localhost/os:latest")
 bib := "quay.io/centos-bootc/bootc-image-builder:latest"
+# Drop-in that skips the first-boot wizard, passed to the test VM as a systemd credential
+skip_setup := "W1VuaXRdCkNvbmRpdGlvblBhdGhFeGlzdHM9L3NraXAtcGxhc21hLXNldHVwCg=="
 
 default:
     @just --list
@@ -34,5 +36,8 @@ iso:
 
 # Boot the test disk headless and check it reaches our login screen
 test:
-    sudo tests/vm-boot.sh output/qcow2/disk.qcow2 output/screens
-    python3 tests/shots.py output/screens
+    sudo SHOTS=12 tests/vm-boot.sh output/qcow2/disk.qcow2 output/screens/setup
+    sudo SHOTS=18 QEMU_EXTRA="-smbios type=11,value=io.systemd.credential.binary:systemd.unit-dropin.plasma-setup.service={{skip_setup}}" \
+        tests/vm-boot.sh output/qcow2/disk.qcow2 output/screens/login
+    python3 tests/shots.py output/screens/setup --no-check
+    python3 tests/shots.py output/screens/login

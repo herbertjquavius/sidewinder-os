@@ -1,5 +1,6 @@
 [kdeglobals][General]
 ColorScheme=$cs
+AccentColor=92,255,122
 
 [kdeglobals][KDE]
 widgetStyle=Breeze
@@ -8,7 +9,7 @@ widgetStyle=Breeze
 Theme=breeze-dark
 
 [plasmarc][Theme]
-name=breeze-dark
+name=default
 
 [kcminputrc][Mouse]
 cursorTheme=breeze_cursors

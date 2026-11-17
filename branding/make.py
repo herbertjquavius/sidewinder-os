@@ -1,4 +1,5 @@
 # Renders all branding assets from distro.env into branding/out
+import json
 import math
 import os
 import random
@@ -10,6 +11,7 @@ from string import Template
 from PIL import Image
 
 from font import build_font
+from scenes import EXTRAS
 from sprites import FONT, JET_SIDE, JET_TOP_HALF, P
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -378,6 +380,28 @@ def main():
     wp = wallpaper()
     for n in (3, 4, 6):
         place(up(wp, n), "wallpapers", slug, "contents", "images", f"{640 * n}x{360 * n}.png")
+
+    # Extra wallpapers, each its own package
+    extras = []
+    for key, (title, draw) in EXTRAS.items():
+        wid = f"{slug}-{key}"
+        img = draw()
+        extras.append(img)
+        for n in (3, 4, 6):
+            place(up(img, n), "wallpapers", wid, "contents", "images", f"{640 * n}x{360 * n}.png")
+        with open(os.path.join(OUT, "wallpapers", wid, "metadata.json"), "w") as f:
+            json.dump({"KPlugin": {"Authors": [{"Name": name}], "Id": wid, "License": "CC-BY-SA-4.0",
+                                   "Name": f"{name} {title}"}}, f, indent=4)
+    sheet = Image.new("RGB", (1920, 720))
+    for i, img in enumerate([wp] + extras):
+        sheet.paste(img, ((i % 3) * 640, (i // 3) * 360))
+    sheet.save(os.path.join(OUT, "preview-wallpapers.png"))
+
+    # First-boot setup wizard background, it only looks at Plasma's Next wallpaper sizes
+    place(up(wp, 8), "setup", "5120x2880.png")
+    tall = up(wp, 9)
+    x, y = (tall.width - 1440) // 2, (tall.height - 2960) // 2
+    place(tall.crop((x, y, x + 1440, y + 2960)), "setup", "1440x2960.png")
 
     # KDE color scheme
     os.makedirs(os.path.join(OUT, "color-schemes"))

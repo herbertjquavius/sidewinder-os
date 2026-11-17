@@ -16,10 +16,16 @@ def count(img, color):
     return sum(1 for p in small.getdata() if all(abs(a - b) <= 8 for a, b in zip(p, color)))
 
 
-def main(folder):
+def main(folder, check=True):
     shots = sorted(glob.glob(os.path.join(folder, "shot-*.ppm")))
     if not shots:
         sys.exit("No screenshots taken")
+    # Only turn them into PNGs
+    if not check:
+        for path in shots:
+            Image.open(path).save(path[:-4] + ".png")
+            os.remove(path)
+        return
     found = None
     for path in shots:
         img = Image.open(path)
@@ -38,4 +44,4 @@ def main(folder):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    main(sys.argv[1], "--no-check" not in sys.argv)

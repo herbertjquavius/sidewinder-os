@@ -51,7 +51,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: vm-screens
-          path: output/screens/*.png
+          path: output/screens
           if-no-files-found: ignore
 
       # Screenshots and boot log on a side branch, easy to read without downloads

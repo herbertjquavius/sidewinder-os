@@ -4,7 +4,6 @@ name = "pilot"
 password = "test"
 groups = ["wheel"]
 
-# Boot messages also go to the serial log, and the first-boot setup wizard
-# is skipped so the test can reach the login screen
+# Boot messages also go to the serial log
 [customizations.kernel]
-append = "console=tty0 console=ttyS0,115200 systemd.mask=plasma-setup.service"
+append = "console=tty0 console=ttyS0,115200"
