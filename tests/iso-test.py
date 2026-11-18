@@ -103,9 +103,9 @@ def is_ours(img):
 
 
 def is_desktop(img):
-    # First-run setup or login: a bright picture, not firmware blue or a text console
-    lit = share(img, lambda r, g, b: r + g + b > 300)
-    return lit > 0.4 and not is_blue(img)
+    # First-run setup or login: a filled picture (our dusk wallpaper is dark), not firmware blue or a text console
+    lit = share(img, lambda r, g, b: r + g + b > 120)
+    return lit > 0.5 and not is_blue(img)
 
 
 def key(k, wait=2.0):

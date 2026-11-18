@@ -56,7 +56,8 @@ welcome/helper.sh - Root tasks for the welcome app via pkexec (bootc upgrade/rol
 
 # Next
 - HANDOFF 2026-11-18: image build green, setup wizard shows our wallpaper (Default -> our art as .jxl, Fedora patches plasma-setup to read wallpapers/Default). ISO builds and installs
-- ISO install test: run 44308372319 PASSED (installed, MOK enrolled, booted to setup screen) but Checksum step failed on root-owned files (fixed: sudo rm/chown in iso.yml). Latest run 44325102844 (new image) FAILED: 'did not reach our screen after enrolling the key'. Cause not checked yet: look at ci-iso branch (mok-*.png, boot-*.png, serial-install.log) first. Likely the test's is_desktop check vs new dark wallpaper (is_desktop wants >40% bright pixels; our dusk wallpaper is dark), so it may be a false fail: make is_desktop accept our wallpaper colors
+- ISO install test: run 44325102844 was a FALSE fail: boot-030 shows our setup wizard ("Begin Setup", Powered by Sidewinder), but is_desktop wanted bright pixels and the dusk wallpaper is dark. Fixed 2026-11-18 (>50% of pixels with r+g+b>120). Re-dispatched iso.yml; check its result next session
+- Setup wizard blanks the screen after ~10 min idle in the VM ("Display output is not active"), normal
 - Not ready for the laptop until one iso.yml run is fully green; then download ISO artifact, owner does docs/laptop-test.md
 - Workflow rule from owner: do NOT sit polling CI for long (burns credits). Push, dispatch, report, stop; check results next session
 - After the ISO passes iso.yml (screens on ci-iso branch): check installer look, MOK blue screen steps, boot menu theme, first boot; then owner does docs/laptop-test.md
