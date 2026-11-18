@@ -140,7 +140,9 @@ def build_icons(name, folder_out):
     icons = {key: folder(mark) for key, mark in MARKS.items()}
     icons.update({key: draw(rows) for key, rows in APPS.items()})
     # Same pictures under the other names apps ask for
-    aliases = {"user-home": ["folder-home"], "system-file-manager": None, "user-trash": ["user-trash-full", "trashcan_empty"],
+    aliases = {"user-home": ["folder-home"], "system-file-manager": ["org.kde.dolphin"],
+               "utilities-terminal": ["org.kde.konsole"], "systemsettings": ["preferences-system"],
+               "plasmadiscover": ["org.kde.discover"], "user-trash": ["user-trash-full", "trashcan_empty"],
                "folder-download": ["folder-downloads"], "folder-games": ["applications-games"]}
     icons["system-file-manager"] = folder("..HH..|.H..H.|.H..H.|..HH..|...H..|....H.".split("|"))
     dirs = []

@@ -128,6 +128,8 @@ EOF
 
 # KDE's own Welcome Center would pop up on top of ours, so it stays off
 rm -f /etc/xdg/autostart/org.kde.plasma-welcome.desktop /usr/share/autostart/org.kde.plasma-welcome.desktop
+# Plasma still opens it on first login, so take it out
+rpm -qa "plasma-welcome*" | xargs -r rpm -e --nodeps
 
 # Menu entry, plus one autostart that only shows on first login
 desktop() {
