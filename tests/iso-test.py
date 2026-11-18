@@ -147,11 +147,9 @@ while True:
         done(False, "no Secure Boot key screen after 75 minutes")
 print(f"Key screen after {int(time.time() - start)}s")
 
-# Enroll: any key, Enroll MOK, Continue, Yes, password, Reboot
+# Enroll: menu opens directly (timeout -1), so Enroll MOK, Continue, Yes, password, Reboot
 time.sleep(2)
-shot("mok-1-start")
-key("ret")
-shot("mok-2-menu")
+shot("mok-1-menu")
 key("down"); key("ret")
 shot("mok-3-enroll")
 key("down"); key("ret")
