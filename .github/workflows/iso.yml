@@ -58,7 +58,8 @@ jobs:
 
       - name: Checksum
         run: |
-          rm -f output/bootiso/test.iso
+          sudo rm -f output/bootiso/test.iso
+          sudo chown -R "$(id -u):$(id -g)" output/bootiso
           cd output/bootiso && sha256sum *.iso > SHA256SUMS
 
       - name: Save ISO
