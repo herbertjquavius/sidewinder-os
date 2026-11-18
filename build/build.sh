@@ -151,6 +151,20 @@ desktop "/etc/xdg/autostart/$SLUG-welcome.desktop" "--first-run"
 /ctx/build/gaming.sh "$SLUG"
 /ctx/build/extras.sh "$SLUG"
 
+# Base image has no Fedora repo files, the ISO builder needs them
+for name in fedora fedora-updates; do
+    [ -f "/etc/yum.repos.d/$name.repo" ] && continue
+    meta=fedora-\$releasever; [ "$name" = fedora-updates ] && meta=updates-released-f\$releasever
+    cat > "/etc/yum.repos.d/$name.repo" <<EOF
+[$name]
+name=Fedora \$releasever - \$basearch ($name)
+metalink=https://mirrors.fedoraproject.org/metalink?repo=$meta&arch=\$basearch
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-\$releasever-\$basearch
+EOF
+done
+
 # Clean up
 dnf clean all
 rm -rf /var/cache/* /var/log/* /tmp/*
