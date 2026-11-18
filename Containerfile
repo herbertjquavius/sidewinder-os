@@ -3,10 +3,11 @@ ARG BASE_IMAGE=localhost/os-kernel:latest
 
 # Renders all branding from distro.env
 FROM registry.fedoraproject.org/fedora:latest AS branding
-RUN dnf -y install python3-pillow python3-fonttools python3-numpy grub2-tools-extra && dnf clean all
+RUN dnf -y install python3-pillow python3-fonttools python3-numpy grub2-tools-extra libjxl-utils && dnf clean all
 COPY distro.env /src/distro.env
 COPY branding /src/branding
-RUN cd /src/branding && python3 make.py
+RUN cd /src/branding && python3 make.py && \
+    for f in out/setup/*.png; do cjxl -d 0 "$f" "${f%.png}.jxl" >/dev/null; done
 
 # Files the build script needs, kept out of the final image
 FROM scratch AS ctx

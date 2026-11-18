@@ -178,9 +178,14 @@ for d in images images_dark; do
     rm -f "$dir/"*
     cp "$B/setup/"*.png "$dir/"
 done
-echo "Setup background copies in the image:"
-find / -xdev \( -path /proc -o -path /sys \) -prune -o -name '5120x2880.*' -print 2>/dev/null | grep -i next || true
-cmp "$B/setup/5120x2880.png" /usr/share/wallpapers/Next/contents/images/5120x2880.png
+# Fedora's build of the wizard reads wallpapers/Default (a link to Fedora's own) as .jxl, so Default becomes ours too
+rm -rf /usr/share/wallpapers/Default
+cp -r "/usr/share/wallpapers/$SLUG" /usr/share/wallpapers/Default
+for d in images images_dark; do
+    mkdir -p "/usr/share/wallpapers/Default/contents/$d"
+    cp "$B/setup/"*.png "$B/setup/"*.jxl "/usr/share/wallpapers/Default/contents/$d/"
+done
+cmp "$B/setup/5120x2880.jxl" /usr/share/wallpapers/Default/contents/images/5120x2880.jxl
 
 # Clean up
 dnf clean all
