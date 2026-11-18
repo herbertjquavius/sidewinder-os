@@ -55,9 +55,10 @@ welcome/helper.sh - Root tasks for the welcome app via pkexec (bootc upgrade/rol
 - docs/laptop-test.md: checklist for the real laptop test
 
 # Next
-- ISO WORKS end to end (run 44300091650 screens on ci-iso): builds, installs, MOK enrolls, boots with Secure Boot to KDE first-run setup. Test now counts that screen as a pass; confirm run green
-- Setup wizard background: Fedora's plasma-setup 6.8.3 is patched to read wallpapers/Default/contents/images/5120x2880.jxl (Default -> F45 = KDE gears), not Next. build.sh now makes Default a copy of our wallpaper + setup .jxl (cjxl in branding stage). Check ci-screens setup/shot-12.png. 'Welcome to Plasma Desktop' text is in C++ (prepareutil.cpp), not changed
-- Status 2026-11-17: system image builds and passes the VM boot/login test (build.yml green). Last desktop shot showed KDE Welcome Center popping up and Dolphin with a Breeze icon; fixed (plasma-welcome removed, icon aliases) in commit after 736b475, not yet seen in screenshots
+- HANDOFF 2026-11-18: image build green, setup wizard shows our wallpaper (Default -> our art as .jxl, Fedora patches plasma-setup to read wallpapers/Default). ISO builds and installs
+- ISO install test: run 44308372319 PASSED (installed, MOK enrolled, booted to setup screen) but Checksum step failed on root-owned files (fixed: sudo rm/chown in iso.yml). Latest run 44325102844 (new image) FAILED: 'did not reach our screen after enrolling the key'. Cause not checked yet: look at ci-iso branch (mok-*.png, boot-*.png, serial-install.log) first. Likely the test's is_desktop check vs new dark wallpaper (is_desktop wants >40% bright pixels; our dusk wallpaper is dark), so it may be a false fail: make is_desktop accept our wallpaper colors
+- Not ready for the laptop until one iso.yml run is fully green; then download ISO artifact, owner does docs/laptop-test.md
+- Workflow rule from owner: do NOT sit polling CI for long (burns credits). Push, dispatch, report, stop; check results next session
 - After the ISO passes iso.yml (screens on ci-iso branch): check installer look, MOK blue screen steps, boot menu theme, first boot; then owner does docs/laptop-test.md
 - Dispatch workflows with REST: gh api -X POST repos/herbertjquavius/sidewinder-os/actions/workflows/iso.yml/dispatches -f ref=main (gh workflow run fails, GraphQL blocked)
 - Owner must make the GHCR package public so installed laptops can update
