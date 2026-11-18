@@ -165,6 +165,17 @@ gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-\$releasever-\$basearch
 EOF
 done
 
+# Fedora signing key for those repos, also missing from the base image
+ver=$(. /etc/os-release && echo "$VERSION_ID")
+key=/etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$ver-$(uname -m)
+if [ ! -f "$key" ]; then
+    mkdir -p /etc/pki/rpm-gpg
+    found=$(find /usr/share/distribution-gpg-keys /etc/pki/rpm-gpg -name "RPM-GPG-KEY-fedora-$ver-primary" 2>/dev/null | head -1)
+    if [ -n "$found" ]; then cp "$found" "$key"
+    else curl -fsSL -o "$key" "https://src.fedoraproject.org/rpms/fedora-repos/raw/rawhide/f/RPM-GPG-KEY-fedora-$ver-primary"
+    fi
+fi
+
 # Clean up
 dnf clean all
 rm -rf /var/cache/* /var/log/* /tmp/*
