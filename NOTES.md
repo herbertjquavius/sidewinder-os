@@ -55,7 +55,7 @@ welcome/helper.sh - Root tasks for the welcome app via pkexec (bootc upgrade/rol
 
 # Next
 - Status 2026-11-17: system image builds and passes the VM boot/login test (build.yml green). Last desktop shot showed KDE Welcome Center popping up and Dolphin with a Breeze icon; fixed (plasma-welcome removed, icon aliases) in commit after 736b475, not yet seen in screenshots
-- ISO: base image lacks fedora.repo/fedora-updates.repo and the Fedora GPG key; build.sh now adds both (repos fixed run 44214966049, key fix pending)
+- ISO: build now works (repos + GPG key added in build.sh, make-iso.sh no longer dies on missing .treeinfo). Next: install test result
 - After the ISO passes iso.yml (screens on ci-iso branch): check installer look, MOK blue screen steps, boot menu theme, first boot; then owner does docs/laptop-test.md
 - Dispatch workflows with REST: gh api -X POST repos/herbertjquavius/sidewinder-os/actions/workflows/iso.yml/dispatches -f ref=main (gh workflow run fails, GraphQL blocked)
 - Owner must make the GHCR package public so installed laptops can update

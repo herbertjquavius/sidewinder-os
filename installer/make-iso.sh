@@ -45,7 +45,7 @@ sed "s|@PIX@|/run/install/product/pixmaps|g" installer/anaconda-gtk.css > "$P/an
 cp "$P/anaconda-gtk.css" "$P/run/install/product/anaconda-gtk.css"
 printf '[User Interface]\ncustom_stylesheet = /usr/share/anaconda/pixmaps/%s.css\n' "$SLUG" > "$P/etc/anaconda/conf.d/99-$SLUG.conf"
 xorriso -osirrox on -indev "$ISO" -extract /.treeinfo "$W/treeinfo" 2>/dev/null || true
-VER=$(sed -n 's/^version *= *//p' "$W/treeinfo" 2>/dev/null | head -1)
+VER=$(sed -n 's/^version *= *//p' "$W/treeinfo" 2>/dev/null | head -1) || true
 printf '[Main]\nProduct=%s\nVersion=%s\nBugURL=%s\nIsFinal=True\nUUID=%s.x86_64\nVariant=\n' \
     "$NAME" "${VER:-1}" "$BUG_URL" "$(date +%Y%m%d%H%M)" > "$P/.buildstamp"
 (cd "$P" && find . | cpio --quiet -o -H newc | gzip -9) > "$W/product.img"
