@@ -54,12 +54,15 @@ welcome/helper.sh - Root tasks for the welcome app via pkexec (bootc upgrade/rol
 - docs/laptop-test.md: checklist for the real laptop test
 
 # Next
-- Installer: enroll our MOK key in kickstart %post (mokutil --import, preset password) so Secure Boot works
-- Benchmarks: stock Fedora kernel vs CachyOS vs CachyOS + LAVD in the VM, write docs/kernel.md
-- Push to GitHub (waiting on owner: connect GitHub, make empty public repo), first CI run, fix what breaks
-- Make the GHCR package public once so installed laptops can update
-- Installer branding (Anaconda from bootc-image-builder)
-- GRUB theme into the bootloader, fastfetch logo, image signing (cosign)
+- Status 2026-11-17: system image builds and passes the VM boot/login test (build.yml green). Last desktop shot showed KDE Welcome Center popping up and Dolphin with a Breeze icon; fixed (plasma-welcome removed, icon aliases) in commit after 736b475, not yet seen in screenshots
+- BLOCKER: ISO. First iso.yml run failed in bootc-image-builder anaconda-iso depsolve: "No match for argument" for every package (coreutils, glibc, grub2...), so it sees no usable package repos from the image. Diagnostic run dispatched (iso.yml run 44207371201): make-iso.sh now prints os-release ID/VERSION_ID and enabled repos per file, and BIB runs with --log-level debug. Read that log first
+- Fix ideas in order: (1) repos disabled or $releasever mismatch in the image, fix in build.sh; (2) BIB is archived and merged into image-builder, try its bootc-installer type (installer built from a bootc container, --bootc-installer-payload-ref); (3) switch to ublue's Titanoboa live ISO like Bazzite
+- After the ISO passes iso.yml (screens on ci-iso branch): check installer look, MOK blue screen steps, boot menu theme, first boot; then owner does docs/laptop-test.md
+- Dispatch workflows with REST: gh api -X POST repos/herbertjquavius/sidewinder-os/actions/workflows/iso.yml/dispatches -f ref=main (gh workflow run fails, GraphQL blocked)
+- Owner must make the GHCR package public so installed laptops can update
+- Benchmarks: bench run results on ci-bench branch, write docs/kernel.md
+- Later: wiki pages for new features (Radar, HUD, saves, TV mode, battery care), fastfetch logo, image signing (cosign)
+- Keep token use low: check CI rarely, no screenshots unless needed
 
 # Decisions
 - Own distro, not a Bazzite reskin: base on Fedora Kinoite via Universal Blue's thin kinoite-main (codecs, hardware fixes)
