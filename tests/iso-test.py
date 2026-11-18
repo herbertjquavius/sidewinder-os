@@ -84,7 +84,17 @@ def share(img, test):
 
 def is_blue(img):
     # Shim's key manager draws white text on a solid blue screen
-    return share(img, lambda r, g, b: b > 140 and r < 60 and g < 60) > 0.5
+    return share(img, lambda r, g, b: b > 140 and r < 60 and g < 60) > 0.2
+
+
+def shim_started():
+    # Serial log shows shim starting from the disk after the install
+    try:
+        log = open(os.path.join(OUT, f"serial-{MODE}.log"), errors="ignore").read()
+    except OSError:
+        return False
+    i = log.find("Install finished")
+    return i >= 0 and "shimx64.efi" in log[i:]
 
 
 def is_ours(img):
@@ -115,14 +125,21 @@ if MODE == "look":
 # Install, then wait for the blue key screen after the restart
 n = 0
 while True:
-    time.sleep(5)
+    time.sleep(2)
     img = shot()
     if img is None:
         continue
     n += 1
-    if n % 6 == 0:
-        img.save(os.path.join(OUT, f"install-{n // 6:03d}.png"))
+    if n % 15 == 0:
+        img.save(os.path.join(OUT, f"install-{n // 15:03d}.png"))
     if is_blue(img):
+        break
+    if shim_started():
+        # Key screen only stays up 10 seconds, so watch closely
+        t1 = time.time()
+        while time.time() - t1 < 8 and not is_blue(img):
+            time.sleep(0.5)
+            img = shot() or img
         break
     if qemu.poll() is not None:
         done(False, "VM stopped during install")
