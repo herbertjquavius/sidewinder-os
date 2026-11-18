@@ -63,13 +63,6 @@ printf '\n[Desktop Entry]\nDefaultProfile=%s.profile\n' "$SLUG" >> /etc/xdg/kons
 cat "$B/color-schemes/$CS.colors" >> /etc/xdg/kdeglobals
 printf '\n[General]\nAccentColor=92,255,122\n' >> /etc/xdg/kdeglobals
 
-# First-boot wizard shows Plasma's Next wallpaper, so Next becomes ours
-for d in images images_dark; do
-    mkdir -p "/usr/share/wallpapers/Next/contents/$d"
-    rm -f "/usr/share/wallpapers/Next/contents/$d/"*
-    cp "$B/setup/"*.png "/usr/share/wallpapers/Next/contents/$d/"
-done
-
 # Login screen
 # Fedora 44+ ships Plasma Login Manager, which can't use custom themes, so swap in SDDM
 dnf -y install sddm sddm-wayland-plasma
@@ -175,6 +168,19 @@ if [ ! -f "$key" ]; then
     else curl -fsSL -o "$key" "https://src.fedoraproject.org/rpms/fedora-repos/raw/rawhide/f/RPM-GPG-KEY-fedora-$ver-primary"
     fi
 fi
+
+# First-boot wizard shows Plasma's Next wallpaper, so Next becomes ours
+# Done last so no package install puts the stock one back
+for d in images images_dark; do
+    dir="/usr/share/wallpapers/Next/contents/$d"
+    [ -L "$dir" ] && rm -f "$dir"
+    mkdir -p "$dir"
+    rm -f "$dir/"*
+    cp "$B/setup/"*.png "$dir/"
+done
+echo "Setup background copies in the image:"
+find / -xdev \( -path /proc -o -path /sys \) -prune -o -name '5120x2880.*' -print 2>/dev/null | grep -i next || true
+cmp "$B/setup/5120x2880.png" /usr/share/wallpapers/Next/contents/images/5120x2880.png
 
 # Clean up
 dnf clean all

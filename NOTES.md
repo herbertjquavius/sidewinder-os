@@ -55,7 +55,7 @@ welcome/helper.sh - Root tasks for the welcome app via pkexec (bootc upgrade/rol
 
 # Next
 - ISO WORKS end to end (run 44300091650 screens on ci-iso): builds, installs, MOK enrolls, boots with Secure Boot to KDE first-run setup. Test now counts that screen as a pass; confirm run green
-- First-run setup screen (plasma-setup, 'Welcome to Plasma Desktop', KDE gears wallpaper) is still stock KDE: brand it
+- First-run setup screen (plasma-setup) showed stock KDE gears: Next wallpaper swap moved to end of build.sh with a cmp check + prints other copies. Check build log 'Setup background copies' and ci-screens setup/shot-12.png
 - Status 2026-11-17: system image builds and passes the VM boot/login test (build.yml green). Last desktop shot showed KDE Welcome Center popping up and Dolphin with a Breeze icon; fixed (plasma-welcome removed, icon aliases) in commit after 736b475, not yet seen in screenshots
 - After the ISO passes iso.yml (screens on ci-iso branch): check installer look, MOK blue screen steps, boot menu theme, first boot; then owner does docs/laptop-test.md
 - Dispatch workflows with REST: gh api -X POST repos/herbertjquavius/sidewinder-os/actions/workflows/iso.yml/dispatches -f ref=main (gh workflow run fails, GraphQL blocked)
