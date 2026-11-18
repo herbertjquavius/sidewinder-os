@@ -21,12 +21,15 @@ mkdir -p "$W" output
     echo 'disable = ["org.fedoraproject.Anaconda.Modules.Users"]'
 } > "$W/config.toml"
 
+# Package sources the builder will use for the installer, shown in the log
+podman run --rm "$IMAGE" sh -c 'grep -E "^(ID|VERSION_ID)=" /etc/os-release; for f in /etc/yum.repos.d/*.repo; do echo "$f: $(grep -c "^enabled=1" "$f") enabled"; done'
+
 podman run --rm --privileged --pull=newer \
     --security-opt label=type:unconfined_t \
     -v ./output:/output \
     -v "./$W/config.toml:/config.toml:ro" \
     -v /var/lib/containers/storage:/var/lib/containers/storage \
-    "$BIB" --type anaconda-iso --rootfs btrfs "$IMAGE"
+    "$BIB" --type anaconda-iso --rootfs btrfs --log-level debug "$IMAGE"
 ISO=output/bootiso/install.iso
 
 # Installer look: name, pictures and colors, packed as product.img which the installer loads from the USB
