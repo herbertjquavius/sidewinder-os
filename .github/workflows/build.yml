@@ -4,6 +4,8 @@ name: build
 on:
   push:
     branches: [main]
+    # ISO and test script changes don't change the image; iso.yml runs on its own for those
+    paths-ignore: ['installer/**', 'tests/iso-test.py', '.github/workflows/iso.yml', 'NOTES.md', 'docs/**']
   pull_request:
   # The daily kernel layer build kicks this off when it finishes
   workflow_run:
