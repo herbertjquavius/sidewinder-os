@@ -102,6 +102,12 @@ def is_ours(img):
     return share(img, lambda r, g, b: g > 200 and r < 140 and b < 170 and g - r > 90) > 0.004
 
 
+def is_desktop(img):
+    # First-run setup or login: a bright picture, not firmware blue or a text console
+    lit = share(img, lambda r, g, b: r + g + b > 300)
+    return lit > 0.4 and not is_blue(img)
+
+
 def key(k, wait=2.0):
     mon(f"sendkey {k}")
     time.sleep(wait)
@@ -173,7 +179,7 @@ while time.time() - t0 < 15 * 60:
     i += 1
     if time.time() - t0 < 90 or i % 3 == 0:
         img.save(os.path.join(OUT, f"boot-{i:03d}.png"))
-    if time.time() - t0 > 60 and is_ours(img):
+    if time.time() - t0 > 60 and (is_ours(img) or is_desktop(img)):
         time.sleep(20)
         shot("first-boot")
         done(True, f"booted to our screen {int(time.time() - t0)}s after enrolling the key")
