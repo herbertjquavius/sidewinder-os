@@ -58,6 +58,14 @@ dnf -y install "$out"/kmod-nvidia-*.rpm
 rm -rf "$out"
 ls /usr/lib/modules/"$KVER"/extra/nvidia/nvidia.ko* >/dev/null
 modinfo -k "$KVER" nvidia | grep -iE '^(version|signer)' || true
+# Secure Boot would refuse the driver if it isn't signed with our key, so stop the build instead
+if [ -s "$KEY" ]; then
+    want=$(openssl x509 -in "$CERT" -noout -subject -nameopt multiline | sed -n 's/^ *commonName *= *//p')
+    for m in nvidia nvidia-drm nvidia-modeset nvidia-uvm; do
+        got=$(modinfo -k "$KVER" -F signer "$m")
+        [ "$got" = "$want" ] || { echo "$m signed by '$got', want '$want'"; exit 1; }
+    done
+fi
 systemctl enable nvidia-suspend.service nvidia-resume.service nvidia-hibernate.service 2>/dev/null || true
 mkdir -p /usr/lib/bootc/kargs.d
 printf 'kargs = ["rd.driver.blacklist=nouveau", "modprobe.blacklist=nouveau", "nvidia-drm.modeset=1", "nvidia-drm.fbdev=1"]\n' \

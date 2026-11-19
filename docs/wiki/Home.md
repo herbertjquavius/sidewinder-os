@@ -11,6 +11,7 @@ Sidewinder is a gaming system for people who just want to play. It installs from
 - [[Controllers]]
 - [[Updates and going back]]
 - [[Performance]]: getting the most FPS
+- [[Extras]]: HUD, save backups, TV mode, battery care, the Radar browser
 
 ## When something's wrong
 - [[Troubleshooting]]: fixes for the common stuff

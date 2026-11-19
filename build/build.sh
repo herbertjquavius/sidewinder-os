@@ -144,6 +144,23 @@ desktop "/etc/xdg/autostart/$SLUG-welcome.desktop" "--first-run"
 /ctx/build/gaming.sh "$SLUG"
 /ctx/build/extras.sh "$SLUG"
 
+# Fastfetch shows our logo and name instead of Fedora's
+dnf -y install fastfetch
+mkdir -p /etc/xdg/fastfetch /usr/share/$SLUG
+cat > /usr/share/$SLUG/fastfetch-logo.txt <<'LOGO'
+$1        __
+$1        \ \_____
+$1     ###[==_____>
+$1        /_/      $2S I D E W I N D E R
+LOGO
+cat > /etc/xdg/fastfetch/config.jsonc <<CFG
+{
+  "logo": { "source": "/usr/share/$SLUG/fastfetch-logo.txt", "type": "file", "color": { "1": "green", "2": "yellow" } },
+  "display": { "color": "green" },
+  "modules": ["title", "separator", "os", "kernel", "uptime", "cpu", "gpu", "memory", "disk", "battery"]
+}
+CFG
+
 # Base image has no Fedora repo files, the ISO builder needs them
 for name in fedora fedora-updates; do
     [ -f "/etc/yum.repos.d/$name.repo" ] && continue
