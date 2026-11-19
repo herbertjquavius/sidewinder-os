@@ -56,6 +56,7 @@ welcome/helper.sh - Root tasks for the welcome app via pkexec (bootc upgrade/rol
 
 # Next
 - HANDOFF 2026-11-18: image build green, setup wizard shows our wallpaper (Default -> our art as .jxl, Fedora patches plasma-setup to read wallpapers/Default). ISO builds and installs
+- 2026-11-18 late: iso.yml 44419208664 PASSED. Then found NVIDIA modules were UNSIGNED (Secure Boot would block them on the laptop). kernel.sh now signs them with sign-file + strict signer check. Chain kernel 44439560815 -> build -> iso running; check it next session. GHCR package confirmed public. Added fastfetch logo, docs/wiki/Extras.md (needs adding to the GitHub wiki by browser)
 - ISO install test: run 44325102844 was a FALSE fail: boot-030 shows our setup wizard ("Begin Setup", Powered by Sidewinder), but is_desktop wanted bright pixels and the dusk wallpaper is dark. Fixed 2026-11-18 (>50% of pixels with r+g+b>120). Re-dispatched iso.yml; check its result next session
 - Setup wizard blanks the screen after ~10 min idle in the VM ("Display output is not active"), normal
 - Not ready for the laptop until one iso.yml run is fully green; then download ISO artifact, owner does docs/laptop-test.md
