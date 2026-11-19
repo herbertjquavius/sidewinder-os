@@ -58,6 +58,21 @@ dnf -y install "$out"/kmod-nvidia-*.rpm
 rm -rf "$out"
 ls /usr/lib/modules/"$KVER"/extra/nvidia/nvidia.ko* >/dev/null
 modinfo -k "$KVER" nvidia | grep -iE '^(version|signer)' || true
+# akmods leaves the modules unsigned, so sign them with our key (kept uncompressed, modprobe loads plain .ko fine)
+if [ -s "$KEY" ]; then
+    SIGN=/usr/src/kernels/$KVER/scripts/sign-file
+    [ -x "$SIGN" ] || { echo "no sign-file at $SIGN"; exit 1; }
+    for f in /usr/lib/modules/"$KVER"/extra/nvidia/*.ko*; do
+        case "$f" in
+            *.xz) xz -d "$f"; k=${f%.xz} ;;
+            *.zst) zstd -d -q --rm "$f"; k=${f%.zst} ;;
+            *.gz) gzip -d "$f"; k=${f%.gz} ;;
+            *) k=$f ;;
+        esac
+        "$SIGN" sha256 "$KEY" "$CERT" "$k"
+    done
+    depmod "$KVER"
+fi
 # Secure Boot would refuse the driver if it isn't signed with our key, so stop the build instead
 if [ -s "$KEY" ]; then
     want=$(openssl x509 -in "$CERT" -noout -subject -nameopt multiline | sed -n 's/^ *commonName *= *//p')
